@@ -1,0 +1,129 @@
+/* 🌌 Page Layout */
+.homepage {
+    background-color: #0d0d0d;
+    color: #1e90ff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* 🔹 Navbar */
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #111;
+    border-bottom: 1px solid #1e90ff;
+    padding: 15px 40px;
+  }
+  
+  .logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #63a4ff;
+  }
+  
+  .nav-links button {
+    background: none;
+    border: 1px solid #1e90ff;
+    color: #1e90ff;
+    padding: 8px 15px;
+    border-radius: 5px;
+    margin-left: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .nav-links button:hover {
+    background-color: #1e90ff;
+    color: #fff;
+  }
+  
+  .logout-btn {
+    border-color: #ff4d4d;
+    color: #ff4d4d;
+  }
+  
+  .logout-btn:hover {
+    background-color: #ff4d4d;
+    color: #fff;
+  }
+  
+  /* 🔹 Main Content */
+  .main-content {
+    text-align: center;
+    margin-top: 120px;
+    padding: 0 20px;
+  }
+  
+  .main-heading {
+    font-size: 2.5rem;
+    color: #63a4ff;
+    margin-bottom: 15px;
+  }
+  
+  .description {
+    font-size: 1.1rem;
+    color: #9ecbff;
+    max-width: 700px;
+    margin: 0 auto 40px auto;
+  }
+  
+  .description span {
+    color: #1e90ff;
+    font-weight: bold;
+  }
+  
+  /* 🔹 Search Bar */
+  .search-section {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .search-bar {
+    width: 100%;
+    padding: 14px 18px;
+    border-radius: 8px;
+    border: 1px solid #1e90ff;
+    background-color: #111;
+    color: #63a4ff;
+    font-size: 16px;
+  }
+  
+  .search-bar::placeholder {
+    color: #5c85d6;
+  }
+  
+  .search-bar:focus {
+    outline: none;
+    border-color: #63a4ff;
+  }
+  
+  /* 🔹 Suggestions Dropdown */
+  .suggestions {
+    position: absolute;
+    width: 100%;
+    background-color: #111;
+    border: 1px solid #1e90ff;
+    border-radius: 5px;
+    margin-top: 5px;
+    list-style: none;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 10;
+  }
+  
+  .suggestions li {
+    padding: 10px;
+    cursor: pointer;
+    color: #63a4ff;
+    transition: background-color 0.2s;
+  }
+  
+  .suggestions li:hover {
+    background-color: #1e90ff;
+    color: white;
+  }
+  

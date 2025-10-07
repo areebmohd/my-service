@@ -1,0 +1,38 @@
+// data/professions.js
+const professions = [
+    "Accountant","Actor","Actuary","Administrative Assistant","Advertising Manager","Aerospace Engineer",
+    "Agricultural Engineer","Air Traffic Controller","Animator","Anesthesiologist","Animal Trainer","App Developer",
+    "Archaeologist","Architect","Art Director","Artist","Astronomer","Athletic Trainer","Auditor","Author",
+    "Auto Mechanic","Baker","Bank Teller","Barber","Bartender","Biochemist","Biologist","Biomedical Engineer",
+    "Blockchain Developer","Bookkeeper","Botanist","Bricklayer","Builder","Business Analyst","Butcher","Cab Driver",
+    "Camera Operator","Car Mechanic","Carpenter","Cashier","Chef","Chemical Engineer","Chemist","Chiropractor",
+    "Civil Engineer","Cleaner","Clerk","Coach","Commercial Pilot","Composer","Computer Engineer","Computer Technician",
+    "Construction Manager","Consultant","Content Creator","Content Writer","Copywriter","Cost Accountant",
+    "Counselor","Courier","Customer Support Representative","Data Analyst","Data Engineer","Data Scientist","Dancer",
+    "Database Administrator","Delivery Driver","Dentist","Dermatologist","Designer","Developer","Dietitian","Dispatcher",
+    "Doctor","Dog Trainer","Driver","Economist","Editor","Electrician","Electrical Engineer","Embroidery Worker",
+    "Emergency Medical Technician","Engineer","Entrepreneur","Event Manager","Executive Assistant","Fashion Designer",
+    "Farmer","Film Director","Finance Manager","Financial Advisor","Firefighter","Fitness Trainer","Flight Attendant",
+    "Florist","Food Inspector","Food Scientist","Forensic Analyst","Game Developer","Gardener","Geologist",
+    "Graphic Designer","Hair Stylist","Handyman","Hardware Engineer","Historian","Home Tutor","Hotel Manager",
+    "Housekeeper","HR Manager","Hydrologist","Illustrator","Industrial Designer","Information Security Analyst",
+    "Inspector","Insurance Agent","Interior Designer","Interpreter","Investigator","IT Manager","Janitor","Jeweler",
+    "Journalist","Judge","Laboratory Technician","Landscaper","Lawyer","Lecturer","Librarian","Life Coach",
+    "Lighting Technician","Linguist","Logistician","Machine Operator","Makeup Artist","Manager","Marketing Manager",
+    "Massage Therapist","Mathematician","Mechanical Engineer","Mechanic","Medical Assistant","Microbiologist","Midwife",
+    "Miner","Model","Musician","Network Administrator","Nurse","Nutritionist","Occupational Therapist","Office Clerk",
+    "Optician","Painter","Paramedic","Park Ranger","Pathologist","Personal Trainer","Pharmacist","Photographer",
+    "Physical Therapist","Physician","Pilot","Plumber","Police Officer","Political Scientist","Postman","Principal",
+    "Private Investigator","Producer","Product Designer","Professor","Program Manager","Programmer","Project Manager",
+    "Psychiatrist","Psychologist","Public Relations Manager","Quality Analyst","Radiologist","Real Estate Agent",
+    "Receptionist","Reporter","Researcher","Retail Manager","Robotics Engineer","Sales Executive","Sales Manager",
+    "Scientist","Screenwriter","Secretary","Security Guard","SEO Specialist","Server","Shopkeeper","Social Media Manager",
+    "Social Worker","Software Developer","Software Engineer","Sound Engineer","Statistician","Stock Analyst",
+    "Surgeon","Surveyor","System Administrator","Tailor","Teacher","Technical Writer","Technician","Telemarketer",
+    "Therapist","Translator","Travel Agent","Truck Driver","UI Designer","UX Designer","Veterinarian","Video Editor",
+    "Waiter","Warehouse Manager","Web Designer","Web Developer","Welder","Writer",
+    // ... (extend list to 1000+ by duplicating or adding more job titles)
+  ];
+  
+  export default professions;
+  

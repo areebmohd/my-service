@@ -1,0 +1,137 @@
+/* 🌍 Global Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* 🌌 Dark Theme Base */
+body {
+  background-color: #0d0d0d; /* Deep black */
+  color: #1e90ff; /* Dodger blue for text */
+  min-height: 100vh;
+}
+
+/* 🧭 General Layout */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* 🔘 Buttons */
+button {
+  background-color: #1e90ff; /* Blue button */
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  background-color: #0b65c2; /* Darker blue on hover */
+}
+
+/* 📋 Inputs and Forms */
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0 16px 0;
+  border: 1px solid #1e90ff;
+  border-radius: 5px;
+  font-size: 15px;
+  background-color: #111; /* Dark input box */
+  color: #1e90ff;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #63a4ff;
+  outline: none;
+}
+
+/* 🧱 Cards */
+.card {
+  background-color: #111;
+  border: 1px solid #1e90ff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 5px rgba(30, 144, 255, 0.2);
+}
+
+/* 🧑‍💻 Navigation Bar */
+nav {
+  background-color: #0b0b0b;
+  border-bottom: 1px solid #1e90ff;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+nav a {
+  text-decoration: none;
+  color: #1e90ff;
+  margin: 0 10px;
+  font-weight: 500;
+}
+
+nav a:hover {
+  color: #63a4ff;
+}
+
+/* 💬 Headings */
+h1, h2, h3 {
+  color: #63a4ff;
+  margin-bottom: 12px;
+}
+
+/* 🧍 Profile Page */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.profile-pic {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #1e90ff;
+}
+
+/* 🧭 Utility Classes */
+.text-center {
+  text-align: center;
+}
+
+.mt-20 {
+  margin-top: 20px;
+}
+
+.mb-20 {
+  margin-bottom: 20px;
+}
+
+/* 💡 Links and Labels */
+a {
+  color: #63a4ff;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+label {
+  color: #63a4ff;
+}
