@@ -223,6 +223,34 @@
     border-radius: 6px;
     border: 1px solid #ccc;
   }
+
+  /* 🔙 Back Button */
+.back-btn {
+  background-color: transparent;
+  color: #63a4ff;
+  border: 1px solid #1e90ff;
+  border-radius: 8px;
+  padding: 8px 15px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.back-btn:hover {
+  background-color: #1e90ff;
+  color: white;
+  box-shadow: 0 0 10px #1e90ff;
+}
+
+/* 📂 Upload file inputs */
+.content-form label {
+  display: block;
+  margin-top: 10px;
+  color: #9ecbff;
+  font-weight: 600;
+}
+
   
   
   

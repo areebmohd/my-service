@@ -1,8 +1,34 @@
 import express from "express";
-import { registerUser, loginUser, updateUser, uploadContent, likeUser, getLikedUsers } from "../controllers/userController.js";
+import {
+  registerUser,
+  loginUser,
+  updateUser,
+  uploadContent,
+  likeUser,
+  getLikedUsers,
+  upload,
+} from "../controllers/userController.js";
 import User from "../models/userModel.js";
 import professions from "../data/professions.js";
 import { protect } from "../middleware/authMiddleware.js";
+
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+
+// ensure uploads folder exists
+const uploadDir = "uploads";
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+
+// Multer config
+const storage = multer.diskStorage({
+  destination(req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename(req, file, cb) {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
 
 const router = express.Router();
 
@@ -10,7 +36,13 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 
 router.put("/update/:id", protect, updateUser);
-router.post("/upload/:id", protect, uploadContent);
+
+router.post(
+  "/upload/:id",
+  protect,
+  upload.array("files", 10), // can upload up to 10 files
+  uploadContent
+);
 
 router.put("/like/:id", protect, likeUser);
 router.get("/liked", protect, getLikedUsers);
@@ -37,17 +69,27 @@ router.post("/suggest", (req, res) => {
 // Search Users by Profession, Fee, Location
 router.get("/search", protect, async (req, res) => {
   try {
-    const { profession, minFee, maxFee, locationFilter, likesSort, accountAgeSort } = req.query;
+    const {
+      profession,
+      minFee,
+      maxFee,
+      locationFilter,
+      likesSort,
+      accountAgeSort,
+    } = req.query;
     const currentUserId = req.user.id;
 
-    const currentUser = await User.findById(currentUserId).select("city country");
+    const currentUser = await User.findById(currentUserId).select(
+      "city country"
+    );
     const filters = {};
 
     // Profession
     if (profession) filters.profession = { $regex: profession, $options: "i" };
 
     // Fee range
-    if (minFee && maxFee) filters.fee = { $gte: Number(minFee), $lte: Number(maxFee) };
+    if (minFee && maxFee)
+      filters.fee = { $gte: Number(minFee), $lte: Number(maxFee) };
 
     // 🔹 Location Filter
     if (locationFilter === "same-city" && currentUser.city) {
@@ -55,9 +97,10 @@ router.get("/search", protect, async (req, res) => {
     } else if (locationFilter === "same-country" && currentUser.country) {
       filters.country = { $regex: new RegExp(`^${currentUser.country}$`, "i") };
     } else if (locationFilter === "different-country" && currentUser.country) {
-      filters.country = { $not: { $regex: new RegExp(`^${currentUser.country}$`, "i") } };
+      filters.country = {
+        $not: { $regex: new RegExp(`^${currentUser.country}$`, "i") },
+      };
     }
-    
 
     // Query + Sorting
     let query = User.find(filters).select("-password");
@@ -82,5 +125,26 @@ router.get("/:id", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// 📤 File Upload Route
+router.post(
+  "/upload-file/:id",
+  protect,
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      if (!req.file)
+        return res.status(400).json({ message: "No file uploaded" });
+      const fileUrl = `${req.protocol}://${req.get("host")}/uploads/${
+        req.file.filename
+      }`;
+      res.json({ url: fileUrl });
+    } catch (err) {
+      res
+        .status(500)
+        .json({ message: "File upload failed", error: err.message });
+    }
+  }
+);
 
 export default router;

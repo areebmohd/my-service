@@ -4,16 +4,16 @@ import API from "../api/api";
 import "./ProfilePage.css";
 
 const ProfilePage = () => {
-  const { id } = useParams(); // profile being viewed
+  const { id } = useParams();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [isOwner, setIsOwner] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [contentMode, setContentMode] = useState(false);
   const [showLikedUsers, setShowLikedUsers] = useState(false);
-  const [likedUsersList, setLikedUsersList] = useState([]); // objects
-  const [myLikedIds, setMyLikedIds] = useState([]); // ids that current user liked
-  const [isLiked, setIsLiked] = useState(false); // whether current user liked this profile
+  const [likedUsersList, setLikedUsersList] = useState([]);
+  const [myLikedIds, setMyLikedIds] = useState([]);
+  const [isLiked, setIsLiked] = useState(false);
   const [form, setForm] = useState({});
   const [newSection, setNewSection] = useState({
     title: "",
@@ -25,7 +25,7 @@ const ProfilePage = () => {
   const token = localStorage.getItem("token");
   const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
 
-  // Fetch profile + my liked users in parallel
+  // Fetch profile and liked users
   useEffect(() => {
     const fetchAll = async () => {
       try {
@@ -42,7 +42,6 @@ const ProfilePage = () => {
         const profile = profileRes.data;
         setUser(profile);
 
-        // init edit form fields
         setForm({
           name: profile.name || "",
           profession: profile.profession || "",
@@ -54,7 +53,6 @@ const ProfilePage = () => {
           contact: profile.contact || "",
         });
 
-        // owner check
         if (
           loggedInUser &&
           (loggedInUser.id === profile._id || loggedInUser._id === profile._id)
@@ -64,13 +62,10 @@ const ProfilePage = () => {
           setIsOwner(false);
         }
 
-        // get my liked users ids
         const likedArr = likedRes.data || [];
         const likedIds = likedArr.map((u) => u._id || u.id);
         setMyLikedIds(likedIds);
         setLikedUsersList(likedArr);
-
-        // set isLiked based on whether the profile id is present in my liked ids
         setIsLiked(likedIds.includes(profile._id));
       } catch (err) {
         console.error("Fetch profile / liked list error:", err);
@@ -78,9 +73,9 @@ const ProfilePage = () => {
     };
 
     fetchAll();
-  }, [id, token]); // rerun when profile changes or token changes
+  }, [id, token]);
 
-  // Profession suggestion handler (same as before)
+  // Profession suggestions
   const handleProfessionInput = async (e) => {
     const value = e.target.value;
     setForm({ ...form, profession: value });
@@ -121,14 +116,25 @@ const ProfilePage = () => {
     }
   };
 
-  // Add content
+  // 📤 Add content with file upload
   const handleAddContent = async (e) => {
     e.preventDefault();
     try {
-      const res = await API.post(`/user/upload/${user._id}`, newSection, {
-        headers: { Authorization: `Bearer ${token}` },
+      const formData = new FormData();
+      formData.append("title", newSection.title);
+      formData.append("description", newSection.description);
+
+      newSection.images.forEach((file) => formData.append("files", file));
+      newSection.videos.forEach((file) => formData.append("files", file));
+
+      const res = await API.post(`/user/upload/${user._id}`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
       });
-      setUser(res.data);
+
+      setUser(res.data.user);
       setContentMode(false);
       setNewSection({ title: "", description: "", images: [], videos: [] });
       alert("Content added!");
@@ -138,7 +144,7 @@ const ProfilePage = () => {
     }
   };
 
-  // Fetch my liked users (used after like/unlike to refresh local list)
+  // Fetch liked users
   const fetchMyLikedUsers = async () => {
     if (!token) {
       setMyLikedIds([]);
@@ -161,7 +167,6 @@ const ProfilePage = () => {
     }
   };
 
-  // Like / Unlike toggle
   const handleLikeUser = async () => {
     if (!token) {
       alert("Please login to like users");
@@ -170,24 +175,18 @@ const ProfilePage = () => {
     }
 
     try {
-      // toggle like on backend
       const res = await API.put(
         `/user/like/${user._id}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // backend returns updated target user (your controller returns target)
-      // setUser accordingly (be defensive)
       if (res.data && (res.data._id || res.data.likes !== undefined)) {
-        // if whole user returned
         if (res.data._id) setUser(res.data);
-        // if only likes returned, update likes count
         else if (res.data.likes !== undefined)
           setUser((prev) => ({ ...prev, likes: res.data.likes }));
       }
 
-      // refresh my liked list and toggle button state
       await fetchMyLikedUsers();
     } catch (err) {
       console.error("Like/unlike error:", err);
@@ -195,7 +194,6 @@ const ProfilePage = () => {
     }
   };
 
-  // show liked users modal/list
   const openLikedUsers = async () => {
     await fetchMyLikedUsers();
     setShowLikedUsers(true);
@@ -205,6 +203,11 @@ const ProfilePage = () => {
 
   return (
     <div className="profile-page">
+      {/* 🔙 Back Button */}
+      <button className="back-btn" onClick={() => navigate(-1)}>
+        ← Back
+      </button>
+
       {/* Header */}
       <div className="profile-header">
         <img
@@ -219,7 +222,6 @@ const ProfilePage = () => {
           <div className="profile-name-row">
             <h1>{user.name}</h1>
 
-            {/* Like button: show only if not owner */}
             {!isOwner && (
               <button
                 className={`like-btn ${isLiked ? "liked" : ""}`}
@@ -253,7 +255,6 @@ const ProfilePage = () => {
         </div>
       </div>
 
-      {/* Edit form */}
       {editMode && (
         <form className="edit-form" onSubmit={handleUpdateProfile}>
           <h3>Edit Profile Info</h3>
@@ -275,7 +276,6 @@ const ProfilePage = () => {
               </ul>
             )}
           </div>
-
           <input
             type="text"
             name="location"
@@ -283,7 +283,6 @@ const ProfilePage = () => {
             value={form.location}
             onChange={handleEditChange}
           />
-
           <input
             type="text"
             name="city"
@@ -291,7 +290,6 @@ const ProfilePage = () => {
             value={form.city || ""}
             onChange={handleEditChange}
           />
-
           <input
             type="text"
             name="country"
@@ -299,7 +297,6 @@ const ProfilePage = () => {
             value={form.country || ""}
             onChange={handleEditChange}
           />
-
           <input
             type="text"
             name="timing"
@@ -307,7 +304,6 @@ const ProfilePage = () => {
             value={form.timing}
             onChange={handleEditChange}
           />
-
           <input
             type="number"
             name="fee"
@@ -326,7 +322,6 @@ const ProfilePage = () => {
         </form>
       )}
 
-      {/* Add content */}
       {contentMode && (
         <form className="content-form" onSubmit={handleAddContent}>
           <h3>Add Custom Section</h3>
@@ -345,33 +340,32 @@ const ProfilePage = () => {
               setNewSection({ ...newSection, description: e.target.value })
             }
           />
+
+          {/* 🖼 File upload */}
+          <label>Upload Images:</label>
           <input
-            type="text"
-            placeholder="Image URLs (comma separated)"
-            value={newSection.images.join(",")}
+            type="file"
+            accept="image/*"
+            multiple
             onChange={(e) =>
-              setNewSection({
-                ...newSection,
-                images: e.target.value.split(","),
-              })
+              setNewSection({ ...newSection, images: Array.from(e.target.files) })
             }
           />
+
+          <label>Upload Videos:</label>
           <input
-            type="text"
-            placeholder="Video URLs (comma separated)"
-            value={newSection.videos.join(",")}
+            type="file"
+            accept="video/*"
+            multiple
             onChange={(e) =>
-              setNewSection({
-                ...newSection,
-                videos: e.target.value.split(","),
-              })
+              setNewSection({ ...newSection, videos: Array.from(e.target.files) })
             }
           />
+
           <button type="submit">Add Section</button>
         </form>
       )}
 
-      {/* Custom sections */}
       <div className="custom-sections">
         {user.customSections?.length ? (
           user.customSections.map((sec, i) => (
@@ -393,7 +387,6 @@ const ProfilePage = () => {
         )}
       </div>
 
-      {/* Liked users modal */}
       {showLikedUsers && (
         <div className="liked-users-modal">
           <div className="modal-content">

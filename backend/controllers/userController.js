@@ -1,6 +1,8 @@
 import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import multer from "multer";
+import path from "path";
 
 // Register
 export const registerUser = async (req, res) => {
@@ -85,34 +87,63 @@ export const updateUser = async (req, res) => {
 
 
 // 🖼️ Upload or delete content (photo, text, video)
+
+// 🗂 Setup Multer storage (for uploads)
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/"); // Folder where files will be saved
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
+  },
+});
+
+// 📸 Filter to accept only image and video files
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "video/mp4", "video/mkv"];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only images and videos are allowed"), false);
+  }
+};
+
+// Initialize multer
+export const upload = multer({ storage, fileFilter });
+
+// 🧠 Upload Content Controller
 export const uploadContent = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, description, images, videos } = req.body;
 
-    if (req.user.id !== id) {
-      return res.status(403).json({ message: "Not authorized" });
-    }
+    // Parse text fields
+    const { title, description } = req.body;
 
+    // Collect uploaded file paths
+    const images = req.files
+      .filter((f) => f.mimetype.startsWith("image"))
+      .map((f) => `/uploads/${f.filename}`);
+
+    const videos = req.files
+      .filter((f) => f.mimetype.startsWith("video"))
+      .map((f) => `/uploads/${f.filename}`);
+
+    // Find user
     const user = await User.findById(id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Push new section into customSections array
-    user.customSections.push({
-      title,
-      description,
-      images,
-      videos,
-    });
+    // Push new section
+    const newSection = { title, description, images, videos };
+    user.sections.push(newSection);
 
     await user.save();
-
-    res.status(200).json(user);
-  } catch (error) {
-    console.error("Upload content error:", error);
-    res.status(500).json({ message: "Error uploading content", error: error.message });
+    res.json({ message: "Content uploaded successfully", user });
+  } catch (err) {
+    console.error("Upload error:", err);
+    res.status(500).json({ message: err.message });
   }
 };
+
 
 // 💙 Like or unlike a user
 export const likeUser = async (req, res) => {

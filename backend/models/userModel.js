@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema({
   fee: { type: Number },
   contact: { type: String },
   profilePic: { type: String },
-  customSections: [
+  sections: [
     {
       title: String,
       description: String,
