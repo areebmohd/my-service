@@ -6,46 +6,35 @@ import {
   uploadContent,
   likeUser,
   getLikedUsers,
-  upload,
+  deleteSection,
+  upload, // multer instance exported from controller
 } from "../controllers/userController.js";
 import User from "../models/userModel.js";
 import professions from "../data/professions.js";
 import { protect } from "../middleware/authMiddleware.js";
-
-import multer from "multer";
-import path from "path";
 import fs from "fs";
-
-// ensure uploads folder exists
-const uploadDir = "uploads";
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
-
-// Multer config
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename(req, file, cb) {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
-});
 
 const router = express.Router();
 
+// ensure uploads folder exists (once)
+const uploadDir = "uploads";
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+
 router.post("/register", registerUser);
 router.post("/login", loginUser);
-
 router.put("/update/:id", protect, updateUser);
 
+// upload content: expect multipart form with field name 'files' (multiple)
 router.post(
   "/upload/:id",
   protect,
-  upload.array("files", 10), // can upload up to 10 files
+  upload.array("files", 10), // front sends files under 'files'
   uploadContent
 );
 
 router.put("/like/:id", protect, likeUser);
 router.get("/liked", protect, getLikedUsers);
+router.delete("/section/:userId/:sectionId", deleteSection);
 
 router.post("/suggest", (req, res) => {
   try {
@@ -66,7 +55,8 @@ router.post("/suggest", (req, res) => {
   }
 });
 
-// Search Users by Profession, Fee, Location
+// search route and single profile get route unchanged...
+// (I assume you already have the search and /:id routes below — keep them)
 router.get("/search", protect, async (req, res) => {
   try {
     const {
@@ -79,36 +69,29 @@ router.get("/search", protect, async (req, res) => {
     } = req.query;
     const currentUserId = req.user.id;
 
-    const currentUser = await User.findById(currentUserId).select(
-      "city country"
-    );
+    const currentUser = await User.findById(currentUserId).select("city country");
     const filters = {};
 
-    // Profession
     if (profession) filters.profession = { $regex: profession, $options: "i" };
-
-    // Fee range
     if (minFee && maxFee)
       filters.fee = { $gte: Number(minFee), $lte: Number(maxFee) };
 
-    // 🔹 Location Filter
-    if (locationFilter === "same-city" && currentUser.city) {
-      filters.city = { $regex: new RegExp(`^${currentUser.city}$`, "i") }; // case-insensitive
-    } else if (locationFilter === "same-country" && currentUser.country) {
+    if (locationFilter === "same-city" && currentUser?.city) {
+      filters.city = { $regex: new RegExp(`^${currentUser.city}$`, "i") };
+    } else if (locationFilter === "same-country" && currentUser?.country) {
       filters.country = { $regex: new RegExp(`^${currentUser.country}$`, "i") };
-    } else if (locationFilter === "different-country" && currentUser.country) {
+    } else if (locationFilter === "different-country" && currentUser?.country) {
       filters.country = {
         $not: { $regex: new RegExp(`^${currentUser.country}$`, "i") },
       };
     }
 
-    // Query + Sorting
-    let query = User.find(filters).select("-password");
-    if (likesSort === "highest") query = query.sort({ likes: -1 });
-    if (accountAgeSort === "new") query = query.sort({ createdAt: -1 });
-    if (accountAgeSort === "old") query = query.sort({ createdAt: 1 });
+    let queryDb = User.find(filters).select("-password");
+    if (likesSort === "highest") queryDb = queryDb.sort({ likes: -1 });
+    if (accountAgeSort === "new") queryDb = queryDb.sort({ createdAt: -1 });
+    if (accountAgeSort === "old") queryDb = queryDb.sort({ createdAt: 1 });
 
-    const users = await query;
+    const users = await queryDb;
     res.json({ users });
   } catch (err) {
     console.error("Search error:", err);
@@ -116,7 +99,6 @@ router.get("/search", protect, async (req, res) => {
   }
 });
 
-// Get Single Profile
 router.get("/:id", async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select("-password");
@@ -125,26 +107,5 @@ router.get("/:id", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
-// 📤 File Upload Route
-router.post(
-  "/upload-file/:id",
-  protect,
-  upload.single("file"),
-  async (req, res) => {
-    try {
-      if (!req.file)
-        return res.status(400).json({ message: "No file uploaded" });
-      const fileUrl = `${req.protocol}://${req.get("host")}/uploads/${
-        req.file.filename
-      }`;
-      res.json({ url: fileUrl });
-    } catch (err) {
-      res
-        .status(500)
-        .json({ message: "File upload failed", error: err.message });
-    }
-  }
-);
 
 export default router;

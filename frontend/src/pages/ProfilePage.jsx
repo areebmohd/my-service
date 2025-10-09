@@ -144,6 +144,29 @@ const ProfilePage = () => {
     }
   };
 
+  // 🗑 Delete Section
+  const handleDeleteSection = async (sectionId) => {
+    if (!window.confirm("Are you sure you want to delete this post?")) return;
+
+    try {
+      const res = await API.delete(`/user/section/${user._id}/${sectionId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUser(res.data.user);
+      alert("Post deleted!");
+    } catch (err) {
+      console.error("Error deleting section:", err);
+      alert("Failed to delete post.");
+    }
+  };
+
+  // 🔗 Share Section
+  const handleShareSection = (sectionId) => {
+    const link = `${window.location.origin}/profile/${user._id}?section=${sectionId}`;
+    navigator.clipboard.writeText(link);
+    alert("Post link copied to clipboard!");
+  };
+
   // Fetch liked users
   const fetchMyLikedUsers = async () => {
     if (!token) {
@@ -341,43 +364,194 @@ const ProfilePage = () => {
             }
           />
 
-          {/* 🖼 File upload */}
-          <label>Upload Images:</label>
+          {/* 🖼 Upload Images */}
+          <label>Upload Images (max 4):</label>
           <input
             type="file"
             accept="image/*"
             multiple
-            onChange={(e) =>
-              setNewSection({ ...newSection, images: Array.from(e.target.files) })
-            }
+            onChange={(e) => {
+              const selected = Array.from(e.target.files);
+              const all = [...newSection.images, ...selected].slice(0, 4); // merge + limit 4
+              setNewSection({ ...newSection, images: all });
+            }}
           />
 
-          <label>Upload Videos:</label>
+          {/* Image Preview with Remove Option */}
+          <div
+            style={{
+              display: "flex",
+              overflowX: "auto",
+              gap: "10px",
+              marginTop: "10px",
+              height: "400px",
+            }}
+          >
+            {newSection.images.map((file, index) => (
+              <div key={index} style={{ position: "relative" }}>
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt="preview"
+                  style={{
+                    height: "100%",
+                    borderRadius: "10px",
+                    objectFit: "cover",
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setNewSection({
+                      ...newSection,
+                      images: newSection.images.filter((_, i) => i !== index),
+                    })
+                  }
+                  style={{
+                    position: "absolute",
+                    top: "5px",
+                    right: "5px",
+                    background: "rgba(0,0,0,0.6)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "50%",
+                    width: "25px",
+                    height: "25px",
+                    cursor: "pointer",
+                  }}
+                >
+                  ✖
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* 🎥 Upload Videos */}
+          <label>Upload Videos (max 4):</label>
           <input
             type="file"
             accept="video/*"
             multiple
-            onChange={(e) =>
-              setNewSection({ ...newSection, videos: Array.from(e.target.files) })
-            }
+            onChange={(e) => {
+              const selected = Array.from(e.target.files);
+              const all = [...newSection.videos, ...selected].slice(0, 4); // merge + limit 4
+              setNewSection({ ...newSection, videos: all });
+            }}
           />
+
+          {/* Video Preview with Remove Option */}
+          <div
+            style={{
+              display: "flex",
+              overflowX: "auto",
+              gap: "10px",
+              marginTop: "10px",
+              height: "400px",
+            }}
+          >
+            {newSection.videos.map((file, index) => (
+              <div key={index} style={{ position: "relative" }}>
+                <video
+                  src={URL.createObjectURL(file)}
+                  controls
+                  style={{
+                    height: "100%",
+                    borderRadius: "10px",
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setNewSection({
+                      ...newSection,
+                      videos: newSection.videos.filter((_, i) => i !== index),
+                    })
+                  }
+                  style={{
+                    position: "absolute",
+                    top: "5px",
+                    right: "5px",
+                    background: "rgba(0,0,0,0.6)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "50%",
+                    width: "25px",
+                    height: "25px",
+                    cursor: "pointer",
+                  }}
+                >
+                  ✖
+                </button>
+              </div>
+            ))}
+          </div>
 
           <button type="submit">Add Section</button>
         </form>
       )}
 
       <div className="custom-sections">
-        {user.customSections?.length ? (
-          user.customSections.map((sec, i) => (
+        {user.sections?.length ? (
+          user.sections.map((sec, i) => (
             <div className="section" key={i}>
-              <h2>{sec.title}</h2>
+              <div className="section-header">
+                <h2>{sec.title}</h2>
+
+                {/* ⋮ Options Menu */}
+                <div className="menu-container">
+                  <button
+                    className="menu-btn"
+                    onClick={() =>
+                      setUser((prev) => ({
+                        ...prev,
+                        sections: prev.sections.map((s, idx) =>
+                          idx === i
+                            ? { ...s, showMenu: !s.showMenu }
+                            : { ...s, showMenu: false }
+                        ),
+                      }))
+                    }
+                  >
+                    ⋮
+                  </button>
+
+                  {sec.showMenu && (
+                    <div className="menu-dropdown">
+                      {/* Show Delete only if user owns this profile */}
+                      {isOwner && (
+                        <button onClick={() => handleDeleteSection(sec._id)}>
+                          🗑 Delete
+                        </button>
+                      )}
+                      <button onClick={() => handleShareSection(sec._id)}>
+                        🔗 Share
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <p>{sec.description}</p>
+
               <div className="media">
                 {sec.images?.map((img, idx) => (
-                  <img src={img} alt="custom" key={idx} />
+                  <img
+                    key={idx}
+                    src={img}
+                    alt="user content"
+                    style={{
+                      width: "200px",
+                      borderRadius: "10px",
+                      margin: "10px",
+                    }}
+                  />
                 ))}
                 {sec.videos?.map((vid, idx) => (
-                  <video key={idx} src={vid} controls />
+                  <video
+                    key={idx}
+                    src={vid}
+                    controls
+                    style={{ width: "300px", margin: "10px" }}
+                  />
                 ))}
               </div>
             </div>
@@ -399,13 +573,26 @@ const ProfilePage = () => {
             </button>
             {likedUsersList.length > 0 ? (
               likedUsersList.map((u) => (
-                <div key={u._id} className="liked-user-row">
+                <div
+                  key={u._id}
+                  className="liked-user-row"
+                  onClick={() => {
+                    setShowLikedUsers(false); // close modal
+                    navigate(`/profile/${u._id}`); // go to profile
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
                   <img
                     src={u.profilePic || "https://via.placeholder.com/40"}
                     alt={u.name}
                     className="liked-user-pic"
                   />
-                  <span>{u.name}</span>
+                  <div className="liked-user-info">
+                    <span className="liked-user-name">{u.name}</span>
+                    <span className="liked-user-profession">
+                      {u.profession || "No profession added"}
+                    </span>
+                  </div>
                 </div>
               ))
             ) : (

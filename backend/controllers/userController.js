@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import multer from "multer";
 import path from "path";
+import fs from "fs";
 
 // Register
 export const registerUser = async (req, res) => {
@@ -40,17 +41,14 @@ export const loginUser = async (req, res) => {
   }
 };
 
-// 🧾 Update profile info
+// Update profile
 export const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-
-    // Allow only the logged-in user to edit their own profile
     if (req.user.id !== id) {
       return res.status(403).json({ message: "Not authorized to edit this profile" });
     }
 
-    // ✅ Pick only allowed fields
     const {
       name,
       profession,
@@ -69,11 +67,10 @@ export const updateUser = async (req, res) => {
       ...(city && { city }),
       ...(country && { country }),
       ...(timing && { timing }),
-      ...(fee && { fee }),
+      ...(fee !== undefined && { fee }),
       ...(contact && { contact }),
     };
 
-    // ✅ Update and return new user
     const updated = await User.findByIdAndUpdate(id, updateData, { new: true }).select("-password");
 
     if (!updated) return res.status(404).json({ message: "User not found" });
@@ -85,22 +82,18 @@ export const updateUser = async (req, res) => {
   }
 };
 
-
-// 🖼️ Upload or delete content (photo, text, video)
-
-// 🗂 Setup Multer storage (for uploads)
+// --- Multer setup exported for route usage (kept simple) ---
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/"); // Folder where files will be saved
+    cb(null, "uploads/");
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
+    cb(null, Date.now() + path.extname(file.originalname));
   },
 });
 
-// 📸 Filter to accept only image and video files
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "video/mp4", "video/mkv"];
+  const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "video/mp4", "video/mkv", "video/quicktime"];
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
@@ -108,35 +101,38 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Initialize multer
 export const upload = multer({ storage, fileFilter });
 
-// 🧠 Upload Content Controller
+// Upload Content Controller (expects upload.array('files') in route)
 export const uploadContent = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Parse text fields
+    // parse title/description from body
     const { title, description } = req.body;
 
-    // Collect uploaded file paths
-    const images = req.files
+    // req.files should be an array
+    const files = req.files || [];
+
+    // convert stored files to full public URLs
+    const images = files
       .filter((f) => f.mimetype.startsWith("image"))
-      .map((f) => `/uploads/${f.filename}`);
+      .map((f) => `${req.protocol}://${req.get("host")}/uploads/${f.filename}`);
 
-    const videos = req.files
+    const videos = files
       .filter((f) => f.mimetype.startsWith("video"))
-      .map((f) => `/uploads/${f.filename}`);
+      .map((f) => `${req.protocol}://${req.get("host")}/uploads/${f.filename}`);
 
-    // Find user
     const user = await User.findById(id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Push new section
     const newSection = { title, description, images, videos };
+    user.sections = user.sections || [];
     user.sections.push(newSection);
 
     await user.save();
+
+    // return updated user object
     res.json({ message: "Content uploaded successfully", user });
   } catch (err) {
     console.error("Upload error:", err);
@@ -144,12 +140,11 @@ export const uploadContent = async (req, res) => {
   }
 };
 
-
-// 💙 Like or unlike a user
+// Like and getLikedUsers unchanged...
 export const likeUser = async (req, res) => {
   try {
-    const userId = req.user.id; // logged-in user
-    const targetId = req.params.id; // user being liked
+    const userId = req.user.id;
+    const targetId = req.params.id;
 
     if (userId === targetId) {
       return res.status(400).json({ message: "You cannot like yourself" });
@@ -162,7 +157,6 @@ export const likeUser = async (req, res) => {
       return res.status(404).json({ message: "Target user not found" });
     }
 
-    // if already liked, unlike
     const alreadyLiked = user.likedUsers.includes(targetId);
     if (alreadyLiked) {
       user.likedUsers.pull(targetId);
@@ -182,15 +176,59 @@ export const likeUser = async (req, res) => {
   }
 };
 
-// 💙 Get all liked users for current user
+// ✅ Example for /user/liked
 export const getLikedUsers = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const user = await User.findById(userId).populate("likedUsers", "name email");
-    res.status(200).json(user.likedUsers);
+    const user = await User.findById(req.user.id).populate(
+      "likedUsers",
+      "name profilePic profession" // 👈 include profession here
+    );
+    res.json(user.likedUsers);
   } catch (err) {
-    console.error("Liked users fetch error:", err);
-    res.status(500).json({ message: "Server error" });
+    console.error(err);
+    res.status(500).json({ message: "Error fetching liked users" });
+  }
+};// adjust path if needed
+
+export const deleteSection = async (req, res) => {
+  try {
+    const { userId, sectionId } = req.params;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Find section to delete
+    const section = user.sections.find(
+      (s) => s._id.toString() === sectionId
+    );
+
+    if (!section) return res.status(404).json({ message: "Section not found" });
+
+    // 🧹 Delete associated files (images + videos)
+    const allFiles = [...(section.images || []), ...(section.videos || [])];
+    allFiles.forEach((fileUrl) => {
+      // Only delete local files (ignore hosted/CDN URLs)
+      if (fileUrl.includes("uploads")) {
+        const filePath = path.join(
+          path.resolve(),
+          fileUrl.replace(/^.*\/uploads/, "uploads")
+        );
+        fs.unlink(filePath, (err) => {
+          if (err) console.log("Failed to delete:", filePath, err.message);
+        });
+      }
+    });
+
+    // Remove section from DB
+    user.sections = user.sections.filter(
+      (s) => s._id.toString() !== sectionId
+    );
+    await user.save();
+
+    res.json({ user });
+  } catch (err) {
+    console.error("Error deleting section:", err);
+    res.status(500).json({ message: "Failed to delete section" });
   }
 };
 
