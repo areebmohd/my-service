@@ -104,17 +104,53 @@ const ProfilePage = () => {
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     try {
-      const res = await API.put(`/user/update/${user._id}`, form, {
-        headers: { Authorization: `Bearer ${token}` },
+      const fd = new FormData();
+  
+      // append textual fields (explicit list)
+      const fields = ["name", "profession", "location", "city", "country", "timing", "fee", "contact"];
+      fields.forEach((k) => {
+        if (form[k] !== undefined && form[k] !== null) fd.append(k, form[k]);
       });
-      setUser(res.data);
+  
+      // profile picture file (if selected)
+      if (form.profilePicFile) {
+        fd.append("profilePic", form.profilePicFile);
+      }
+  
+      // removal flag: append 'true' string when user wants to remove
+      if (form.removeProfilePic) {
+        fd.append("removeProfilePic", "true");
+      }
+  
+      const res = await API.put(`/user/update/${user._id}`, fd, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+  
+      // server returns { user: updated }
+      const updatedUser = res.data?.user || res.data;
+      setUser(updatedUser);
+      // reset editing form fields (you can reinit from updated user)
+      setForm({
+        name: updatedUser.name || "",
+        profession: updatedUser.profession || "",
+        location: updatedUser.location || "",
+        city: updatedUser.city || "",
+        country: updatedUser.country || "",
+        timing: updatedUser.timing || "",
+        fee: updatedUser.fee || "",
+        contact: updatedUser.contact || "",
+      });
       setEditMode(false);
       alert("Profile updated!");
     } catch (err) {
-      console.error(err);
+      console.error("Failed update:", err);
       alert("Failed to update profile");
     }
   };
+  
 
   // 📤 Add content with file upload
   const handleAddContent = async (e) => {
@@ -279,8 +315,78 @@ const ProfilePage = () => {
       </div>
 
       {editMode && (
-        <form className="edit-form" onSubmit={handleUpdateProfile}>
+        <form
+          className="edit-form"
+          onSubmit={handleUpdateProfile}
+          encType="multipart/form-data"
+        >
           <h3>Edit Profile Info</h3>
+          {/* 🧍‍♂️ Name Field */}
+          <input
+            type="text"
+            name="name"
+            placeholder="Full Name"
+            value={form.name}
+            onChange={handleEditChange}
+          />
+
+          {/* 🖼 Profile Picture Upload */}
+          <div className="profile-pic-edit">
+            <label>Profile Picture:</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files[0];
+                setForm((prev) => ({
+                  ...prev,
+                  profilePicFile: file,
+                  removeProfilePic: false,
+                }));
+                // optionally preview immediately:
+                setUser((prev) => ({
+                  ...prev,
+                  profilePic: file
+                    ? URL.createObjectURL(file)
+                    : prev.profilePic,
+                }));
+              }}
+            />
+
+            {user.profilePic && (
+              <div style={{ marginTop: "10px" }}>
+                <img
+                  src={user.profilePic}
+                  alt="Current"
+                  style={{ width: "100px", borderRadius: "10px" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    // mark removal and clear any selected file
+                    setForm((prev) => ({
+                      ...prev,
+                      removeProfilePic: true,
+                      profilePicFile: null,
+                    }));
+                    // also update UI immediately
+                    setUser((prev) => ({ ...prev, profilePic: "" }));
+                  }}
+                  style={{
+                    marginLeft: 10,
+                    background: "red",
+                    color: "#fff",
+                    border: "none",
+                    padding: "6px 10px",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                  }}
+                >
+                  Remove Picture
+                </button>
+              </div>
+            )}
+          </div>
           <div className="profession-input">
             <input
               type="text"

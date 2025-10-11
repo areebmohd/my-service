@@ -41,7 +41,6 @@ export const loginUser = async (req, res) => {
   }
 };
 
-// Update profile
 export const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
@@ -49,6 +48,7 @@ export const updateUser = async (req, res) => {
       return res.status(403).json({ message: "Not authorized to edit this profile" });
     }
 
+    // text fields
     const {
       name,
       profession,
@@ -71,16 +71,64 @@ export const updateUser = async (req, res) => {
       ...(contact && { contact }),
     };
 
+    // find existing user
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // helper to get local path from stored URL or path
+    const getLocalPathFromUrl = (fileUrl) => {
+      if (!fileUrl) return null;
+      try {
+        // fileUrl may be a full URL like http://host/uploads/abc.jpg
+        const parsed = new URL(fileUrl);
+        const idx = parsed.pathname.indexOf("/uploads/");
+        if (idx !== -1) return path.join(path.resolve(), parsed.pathname.slice(idx + 1)); // remove leading '/'
+      } catch (err) {
+        // not an absolute URL; fallback
+        const idx2 = fileUrl.indexOf("/uploads/");
+        if (idx2 !== -1) return path.join(path.resolve(), fileUrl.slice(idx2 + 1));
+      }
+      return null;
+    };
+
+    // removeProfilePic flag may come as "true" string (FormData) or boolean true
+    const removeFlag = req.body && (req.body.removeProfilePic === "true" || req.body.removeProfilePic === true);
+
+    // If user asked to remove profile pic
+    if (removeFlag && user.profilePic) {
+      const localPath = getLocalPathFromUrl(user.profilePic);
+      if (localPath) {
+        fs.unlink(localPath, (err) => {
+          if (err) console.warn("Failed to delete old profile pic:", localPath, err.message);
+        });
+      }
+      updateData.profilePic = ""; // clear DB field
+    }
+
+    // If a new profilePic file was uploaded, delete old and set new URL
+    if (req.file) {
+      // delete old
+      if (user.profilePic) {
+        const oldPath = getLocalPathFromUrl(user.profilePic);
+        if (oldPath) {
+          fs.unlink(oldPath, (err) => {
+            if (err) console.warn("Failed to delete previous profile pic:", oldPath, err.message);
+          });
+        }
+      }
+      // set new public URL
+      updateData.profilePic = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+    }
+
     const updated = await User.findByIdAndUpdate(id, updateData, { new: true }).select("-password");
-
-    if (!updated) return res.status(404).json({ message: "User not found" });
-
-    res.json({ message: "Profile updated successfully", user: updated });
+    return res.json({ message: "Profile updated", user: updated });
   } catch (error) {
     console.error("Error updating profile:", error);
-    res.status(500).json({ message: "Error updating profile", error: error.message });
+    return res.status(500).json({ message: "Error updating profile", error: error.message });
   }
 };
+
+
 
 // --- Multer setup exported for route usage (kept simple) ---
 const storage = multer.diskStorage({

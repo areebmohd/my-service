@@ -22,7 +22,7 @@ if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);
-router.put("/update/:id", protect, updateUser);
+router.put("/update/:id", protect, upload.single("profilePic"), updateUser);
 
 // upload content: expect multipart form with field name 'files' (multiple)
 router.post(
