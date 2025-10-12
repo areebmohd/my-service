@@ -22,24 +22,47 @@ const LoginRegisterPage = () => {
   // Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
+    // 🚨 Check for minimum password length (only on register)
+    if (!isLogin && form.password.length < 5) {
+      alert("Password must be at least 5 characters long!");
+      return;
+    }
+  
     try {
       const endpoint = isLogin ? "/user/login" : "/user/register";
       const res = await API.post(endpoint, form);
-
+  
       if (isLogin) {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("user", JSON.stringify(res.data.user));
         navigate("/");
-      }else {
+      } else {
         alert("Registration successful! Please login now.");
         setIsLogin(true);
       }
     } catch (err) {
-      console.error(err);
-      alert(err.response?.data?.message || "Something went wrong!");
+      console.error("Login/Register error:", err);
+  
+      const message =
+        err.response?.data?.msg ||
+        err.response?.data?.message ||
+        "Something went wrong!";
+  
+      if (isLogin) {
+        if (message === "User not found") {
+          alert("No account found with this email. Please register first.");
+        } else if (message === "Invalid password") {
+          alert("Incorrect password. Please try again!");
+        } else {
+          alert(message);
+        }
+      } else {
+        alert(message);
+      }
     }
-  };
+  };  
+  
 
   return (
     <div className="auth-page">

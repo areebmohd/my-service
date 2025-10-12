@@ -9,6 +9,18 @@ import fs from "fs";
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // 🚨 Check password length
+    if (password.length < 5) {
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 5 characters long" });
+    }
+
     const userExist = await User.findOne({ email });
     if (userExist) return res.status(400).json({ msg: "User already exists" });
 
@@ -31,6 +43,7 @@ export const registerUser = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 // Login
 export const loginUser = async (req, res) => {
