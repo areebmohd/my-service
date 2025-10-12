@@ -18,7 +18,7 @@ const HomePage = () => {
     const value = e.target.value;
     setQuery(value);
 
-    if (value.trim().length > 1) {
+    if (value.trim().length > 0) {
       try {
         const res = await API.post("/user/suggest", { query: value });
         setSuggestions(res.data.suggestions || []);
@@ -32,7 +32,7 @@ const HomePage = () => {
 
   // ✅ Go to search results page
   const handleSelectSuggestion = (profession) => {
-    navigate(`/search?profession=${profession}`);
+    navigate(`/search?profession=${encodeURIComponent(profession)}`);
   };
 
   // ✅ Logout function
@@ -83,8 +83,8 @@ const HomePage = () => {
           {suggestions.length > 0 && (
             <ul className="suggestions">
               {suggestions.map((s, i) => (
-                <li key={i} onClick={() => handleSelectSuggestion(s)}>
-                  {s}
+                <li key={i} onClick={() => handleSelectSuggestion(s.value)}>
+                  {s.type === "user" ? `👤 ${s.value}` : `🧰 ${s.value}`}
                 </li>
               ))}
             </ul>

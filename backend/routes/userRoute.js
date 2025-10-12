@@ -36,43 +36,61 @@ router.put("/like/:id", protect, likeUser);
 router.get("/liked", protect, getLikedUsers);
 router.delete("/section/:userId/:sectionId", deleteSection);
 
-router.post("/suggest", (req, res) => {
+// 📍 Suggest route (update this)
+router.post("/suggest", async (req, res) => {
   try {
-    const query = (req.body.query || "").trim().toLowerCase();
+    const { query } = req.body;
+    if (!query) return res.json({ suggestions: [] });
 
-    if (!query) {
-      return res.json({ suggestions: [] });
-    }
+    const professionSuggestions = professions
+      .filter((p) => p.toLowerCase().includes(query.toLowerCase()))
+      .slice(0, 5)
+      .map((p) => ({ type: "profession", value: p }));
 
-    const suggestions = professions
-      .filter((p) => p.toLowerCase().includes(query))
-      .slice(0, 10); // limit to 10
+    const users = await User.find({
+      name: { $regex: query, $options: "i" },
+    })
+      .limit(5)
+      .select("name");
 
-    return res.json({ suggestions });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ msg: "Suggestion failed" });
+    const nameSuggestions = users.map((u) => ({
+      type: "user",
+      value: u.name,
+    }));
+
+    res.json({ suggestions: [...professionSuggestions, ...nameSuggestions] });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch suggestions" });
   }
 });
 
-// search route and single profile get route unchanged...
-// (I assume you already have the search and /:id routes below — keep them)
+
 router.get("/search", protect, async (req, res) => {
   try {
     const {
-      profession,
+      profession, // now this can be a name or profession
       minFee,
       maxFee,
       locationFilter,
       likesSort,
       accountAgeSort,
     } = req.query;
-    const currentUserId = req.user.id;
 
+    const currentUserId = req.user.id;
     const currentUser = await User.findById(currentUserId).select("city country");
+
     const filters = {};
 
-    if (profession) filters.profession = { $regex: profession, $options: "i" };
+    if (profession && typeof profession === "string" && profession !== "[object Object]") {
+      filters.$or = [
+        { profession: { $regex: profession, $options: "i" } },
+        { name: { $regex: profession, $options: "i" } },
+      ];
+    } else {
+      // No valid search term — return empty result instead of all users
+      return res.json({ users: [] });
+    }    
+
     if (minFee && maxFee)
       filters.fee = { $gte: Number(minFee), $lte: Number(maxFee) };
 
@@ -87,6 +105,7 @@ router.get("/search", protect, async (req, res) => {
     }
 
     let queryDb = User.find(filters).select("-password");
+
     if (likesSort === "highest") queryDb = queryDb.sort({ likes: -1 });
     if (accountAgeSort === "new") queryDb = queryDb.sort({ createdAt: -1 });
     if (accountAgeSort === "old") queryDb = queryDb.sort({ createdAt: 1 });

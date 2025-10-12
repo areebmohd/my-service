@@ -50,8 +50,9 @@ const SearchResultsPage = () => {
     <div className="search-results-page">
       <header className="results-header">
         <h1>
-          Results for: <span>{profession}</span>
+          Results for: <span>{decodeURIComponent(profession)}</span>
         </h1>
+
         <button className="back-btn" onClick={() => navigate("/")}>
           ← Back to Home
         </button>
@@ -59,7 +60,10 @@ const SearchResultsPage = () => {
 
       <div className="filters">
         {/* 💰 Fee */}
-        <select value={feeFilter} onChange={(e) => setFeeFilter(e.target.value)}>
+        <select
+          value={feeFilter}
+          onChange={(e) => setFeeFilter(e.target.value)}
+        >
           <option value="">Filter by Fee</option>
           <option value="0-500">₹0 - ₹500</option>
           <option value="501-1000">₹501 - ₹1000</option>
@@ -68,7 +72,10 @@ const SearchResultsPage = () => {
         </select>
 
         {/* 📍 Location */}
-        <select value={locationFilter} onChange={(e) => setLocationFilter(e.target.value)}>
+        <select
+          value={locationFilter}
+          onChange={(e) => setLocationFilter(e.target.value)}
+        >
           <option value="">Filter by Location</option>
           <option value="same-city">Same City</option>
           <option value="same-country">Same Country</option>
@@ -76,13 +83,19 @@ const SearchResultsPage = () => {
         </select>
 
         {/* ❤️ Likes */}
-        <select value={likesSort} onChange={(e) => setLikesSort(e.target.value)}>
+        <select
+          value={likesSort}
+          onChange={(e) => setLikesSort(e.target.value)}
+        >
           <option value="">Sort by Likes</option>
           <option value="highest">Highest Likes</option>
         </select>
 
         {/* 🕓 Account Age */}
-        <select value={accountAgeSort} onChange={(e) => setAccountAgeSort(e.target.value)}>
+        <select
+          value={accountAgeSort}
+          onChange={(e) => setAccountAgeSort(e.target.value)}
+        >
           <option value="">Sort by Account Age</option>
           <option value="new">New Accounts</option>
           <option value="old">Old Accounts</option>
