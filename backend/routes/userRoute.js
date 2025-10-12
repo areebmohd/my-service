@@ -6,6 +6,8 @@ import {
   uploadContent,
   likeUser,
   getLikedUsers,
+  sendResetOtp,
+  resetPasswordWithOtp,
   deleteSection,
   upload, // multer instance exported from controller
 } from "../controllers/userController.js";
@@ -35,6 +37,9 @@ router.post(
 router.put("/like/:id", protect, likeUser);
 router.get("/liked", protect, getLikedUsers);
 router.delete("/section/:userId/:sectionId", deleteSection);
+
+router.post("/send-reset-otp", sendResetOtp);
+router.post("/reset-password-otp", resetPasswordWithOtp);
 
 // 📍 Suggest route (update this)
 router.post("/suggest", async (req, res) => {

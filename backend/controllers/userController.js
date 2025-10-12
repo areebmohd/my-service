@@ -4,6 +4,8 @@ import jwt from "jsonwebtoken";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import crypto from "crypto";
+import sendEmail from "../utils/sendEmail.js";
 
 // Register
 export const registerUser = async (req, res) => {
@@ -64,6 +66,81 @@ export const loginUser = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// ✅ Step 1: Send OTP to email
+export const sendResetOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "Email is required" });
+
+    const user = await User.findOne({ email });
+    if (!user)
+      return res.status(404).json({ message: "No user found with this email" });
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Hash OTP before saving
+    const hashedOtp = crypto.createHash("sha256").update(otp).digest("hex");
+
+    user.resetPasswordOTP = hashedOtp;
+    user.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 mins expiry
+    await user.save({ validateBeforeSave: false });
+
+    // Send OTP email
+    const message = `
+      <p>Your OTP for password reset is:</p>
+      <h2>${otp}</h2>
+      <p>This OTP is valid for 10 minutes.</p>
+    `;
+    await sendEmail({
+      to: user.email,
+      subject: "Password Reset OTP",
+      html: message,
+    });
+
+    res.json({ message: "OTP sent successfully to your email" });
+  } catch (err) {
+    console.error("OTP Send Error:", err);
+    res.status(500).json({ message: "Failed to send OTP" });
+  }
+};
+
+// ✅ Step 2: Verify OTP and reset password
+export const resetPasswordWithOtp = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    if (!email || !otp || !newPassword)
+      return res.status(400).json({ message: "All fields are required" });
+
+    if (newPassword.length < 5)
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 5 characters long" });
+
+    const hashedOtp = crypto.createHash("sha256").update(otp).digest("hex");
+
+    const user = await User.findOne({
+      email,
+      resetPasswordOTP: hashedOtp,
+      resetPasswordExpire: { $gt: Date.now() },
+    });
+
+    if (!user)
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.resetPasswordOTP = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+
+    res.json({ message: "Password reset successful! Please login." });
+  } catch (err) {
+    console.error("Password reset error:", err);
+    res.status(500).json({ message: "Error resetting password" });
+  }
+};
+
 
 export const updateUser = async (req, res) => {
   try {

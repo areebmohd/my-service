@@ -18,6 +18,8 @@ const userSchema = new mongoose.Schema(
     timing: { type: String },
     fee: { type: Number },
     contact: { type: String },
+    resetPasswordOTP: { type: String },
+    resetPasswordExpire: { type: Date },
     profilePic: { type: String },
     sections: [
       {
