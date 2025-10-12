@@ -159,7 +159,15 @@ const ProfilePage = () => {
       alert("Profile updated!");
     } catch (err) {
       console.error("Failed update:", err);
-      alert("Failed to update profile");
+      if (
+        err.response &&
+        err.response.status === 400 &&
+        err.response.data.message === "Name already taken"
+      ) {
+        alert("⚠️ This name is already taken. Please choose a different name.");
+      } else {
+        alert("❌ Failed to update profile. Try again later.");
+      }
     }
   };
 
@@ -340,6 +348,16 @@ const ProfilePage = () => {
             placeholder="Full Name"
             value={form.name}
             onChange={handleEditChange}
+          />
+
+          {/* 📧 Email (read-only) */}
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={user.email || ""}
+            readOnly
+            style={{ backgroundColor: "black", cursor: "not-allowed" }}
           />
 
           {/* 🖼 Profile Picture Upload */}
