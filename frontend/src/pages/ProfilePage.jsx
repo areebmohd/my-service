@@ -45,6 +45,7 @@ const ProfilePage = () => {
         setForm({
           name: profile.name || "",
           profession: profile.profession || "",
+          bio: profile.bio || "",
           location: profile.location || "",
           city: profile.city || "",
           country: profile.country || "",
@@ -105,30 +106,40 @@ const ProfilePage = () => {
     e.preventDefault();
     try {
       const fd = new FormData();
-  
+
       // append textual fields (explicit list)
-      const fields = ["name", "profession", "location", "city", "country", "timing", "fee", "contact"];
+      const fields = [
+        "name",
+        "profession",
+        "bio",
+        "location",
+        "city",
+        "country",
+        "timing",
+        "fee",
+        "contact",
+      ];
       fields.forEach((k) => {
         if (form[k] !== undefined && form[k] !== null) fd.append(k, form[k]);
       });
-  
+
       // profile picture file (if selected)
       if (form.profilePicFile) {
         fd.append("profilePic", form.profilePicFile);
       }
-  
+
       // removal flag: append 'true' string when user wants to remove
       if (form.removeProfilePic) {
         fd.append("removeProfilePic", "true");
       }
-  
+
       const res = await API.put(`/user/update/${user._id}`, fd, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       });
-  
+
       // server returns { user: updated }
       const updatedUser = res.data?.user || res.data;
       setUser(updatedUser);
@@ -136,6 +147,7 @@ const ProfilePage = () => {
       setForm({
         name: updatedUser.name || "",
         profession: updatedUser.profession || "",
+        bio: updatedUser.bio || "",
         location: updatedUser.location || "",
         city: updatedUser.city || "",
         country: updatedUser.country || "",
@@ -150,7 +162,6 @@ const ProfilePage = () => {
       alert("Failed to update profile");
     }
   };
-  
 
   // 📤 Add content with file upload
   const handleAddContent = async (e) => {
@@ -293,6 +304,7 @@ const ProfilePage = () => {
 
           <p className="likes">Likes: {user.likes || 0}</p>
           <p className="detail">Profession: {user.profession || "N/A"}</p>
+          <p className="detail">Bio: {user.bio || "N/A"}</p>
           <p className="detail">Location: {user.location || "N/A"}</p>
           <p className="detail">City: {user.city || "N/A"}</p>
           <p className="detail">Country: {user.country || "N/A"}</p>
@@ -405,6 +417,12 @@ const ProfilePage = () => {
               </ul>
             )}
           </div>
+          <textarea
+            name="bio"
+            placeholder="Write something about yourself"
+            value={form.bio || ""}
+            onChange={handleEditChange}
+          />
           <input
             type="text"
             name="location"

@@ -12,6 +12,17 @@ export const registerUser = async (req, res) => {
     const userExist = await User.findOne({ email });
     if (userExist) return res.status(400).json({ msg: "User already exists" });
 
+    const existingName = await User.findOne({ name });
+    if (existingName) {
+      return res.status(400).json({ message: "Name is already taken" });
+    }
+
+    if (!/^[A-Za-z0-9]+$/.test(name)) {
+      return res.status(400).json({
+        message: "Name must contain only alphabets and numbers",
+      });
+    }
+
     const hashed = await bcrypt.hash(password, 10);
     const user = await User.create({ name, email, password: hashed });
 
@@ -52,6 +63,7 @@ export const updateUser = async (req, res) => {
     const {
       name,
       profession,
+      bio,
       location,
       city,
       country,
@@ -62,7 +74,8 @@ export const updateUser = async (req, res) => {
 
     const updateData = {
       ...(name && { name }),
-      ...(profession && { profession }),
+      ...(profession && { profession }), 
+      ...(bio && { bio }), 
       ...(location && { location }),
       ...(city && { city }),
       ...(country && { country }),
