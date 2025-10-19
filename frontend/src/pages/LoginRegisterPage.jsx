@@ -22,7 +22,6 @@ const LoginRegisterPage = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // 🌀 Toggle login/register
   const toggleMode = () => {
     setIsLogin(!isLogin);
     setForm({ name: "", email: "", password: "", otp: "", newPassword: "" });
@@ -30,13 +29,10 @@ const LoginRegisterPage = () => {
     setOtpMode(false);
   };
 
-  // 🚨 Forgot password clicked
   const handleForgotPassword = async () => {
     if (!form.email) return alert("Please enter your email first!");
 
-    const confirmReset = window.confirm(
-      "Do you want to reset your password?"
-    );
+    const confirmReset = window.confirm("Do you want to reset your password?");
     if (!confirmReset) return;
 
     try {
@@ -48,11 +44,9 @@ const LoginRegisterPage = () => {
     }
   };
 
-  // 🧠 Handle login or register or reset
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // OTP reset mode
     if (otpMode) {
       if (form.newPassword.length < 5) {
         return alert("Password must be at least 5 characters long");
@@ -75,7 +69,6 @@ const LoginRegisterPage = () => {
       return;
     }
 
-    // Normal login/register
     try {
       const endpoint = isLogin ? "/user/login" : "/user/register";
       const res = await API.post(endpoint, form);
@@ -95,16 +88,16 @@ const LoginRegisterPage = () => {
   };
 
   return (
-    <div className="auth-page">
+    <div className="login-page">
       <div className="auth-card">
-        <h1 className="site-title">MyService.com</h1>
-        <h2>
+        <p className="site-title">MyService</p>
+        <p>
           {otpMode
             ? "Reset your password"
             : isLogin
             ? "Login to your account"
             : "Create your account"}
-        </h2>
+        </p>
 
         <form onSubmit={handleSubmit}>
           {!isLogin && !otpMode && (
@@ -160,11 +153,7 @@ const LoginRegisterPage = () => {
           )}
 
           <button type="submit" className="submit-btn">
-            {otpMode
-              ? "Submit"
-              : isLogin
-              ? "Login"
-              : "Register"}
+            {otpMode ? "Submit" : isLogin ? "Login" : "Register"}
           </button>
         </form>
 
@@ -182,6 +171,16 @@ const LoginRegisterPage = () => {
             </span>
           </p>
         )}
+      </div>
+      <div className="footer">
+        <div className="options">
+          <a href="">Privacy Policy</a>
+          <a href="">Terms & Conditions</a>
+          <a href="">Contact Us</a>
+        </div>
+        <div className="copy">
+          copyright © {new Date().getFullYear()} MyService
+        </div>
       </div>
     </div>
   );
