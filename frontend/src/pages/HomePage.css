@@ -1,129 +1,135 @@
-/* 🌌 Page Layout */
 .homepage {
-    background-color: #0d0d0d;
-    color: #1e90ff;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  /* 🔹 Navbar */
-  .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #111;
-    border-bottom: 1px solid #1e90ff;
-    padding: 15px 40px;
-  }
-  
-  .logo {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #63a4ff;
-  }
-  
-  .nav-links button {
-    background: none;
-    border: 1px solid #1e90ff;
-    color: #1e90ff;
-    padding: 8px 15px;
-    border-radius: 5px;
-    margin-left: 10px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-  
-  .nav-links button:hover {
-    background-color: #1e90ff;
-    color: #fff;
-  }
-  
-  .logout-btn {
-    border-color: #ff4d4d;
-    color: #ff4d4d;
-  }
-  
-  .logout-btn:hover {
-    background-color: #ff4d4d;
-    color: #fff;
-  }
-  
-  /* 🔹 Main Content */
-  .main-content {
-    text-align: center;
-    margin-top: 120px;
-    padding: 0 20px;
-  }
-  
-  .main-heading {
-    font-size: 2.5rem;
-    color: #63a4ff;
-    margin-bottom: 15px;
-  }
-  
-  .description {
-    font-size: 1.1rem;
-    color: #9ecbff;
-    max-width: 700px;
-    margin: 0 auto 40px auto;
-  }
-  
-  .description span {
-    color: #1e90ff;
-    font-weight: bold;
-  }
-  
-  /* 🔹 Search Bar */
-  .search-section {
-    position: relative;
-    width: 100%;
-    max-width: 600px;
-    margin: 0 auto;
-  }
-  
-  .search-bar {
-    width: 100%;
-    padding: 14px 18px;
-    border-radius: 8px;
-    border: 1px solid #1e90ff;
-    background-color: #111;
-    color: #63a4ff;
-    font-size: 16px;
-  }
-  
-  .search-bar::placeholder {
-    color: #5c85d6;
-  }
-  
-  .search-bar:focus {
-    outline: none;
-    border-color: #63a4ff;
-  }
-  
-  /* 🔹 Suggestions Dropdown */
-  .suggestions {
-    position: absolute;
-    width: 100%;
-    background-color: #111;
-    border: 1px solid #1e90ff;
-    border-radius: 5px;
-    margin-top: 5px;
-    list-style: none;
-    max-height: 200px;
-    overflow-y: auto;
-    z-index: 10;
-  }
-  
-  .suggestions li {
-    padding: 10px;
-    cursor: pointer;
-    color: #63a4ff;
-    transition: background-color 0.2s;
-  }
-  
-  .suggestions li:hover {
-    background-color: #1e90ff;
-    color: white;
-  }
-  
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: transparent;
+}
+
+.navbar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 30px;
+}
+
+.navbar img {
+  height: 60px;
+  width: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.logo {
+  font-size: 100px;
+  color: white;
+}
+
+.logout-btn{
+  background-color: white;
+  color: black;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+.logout-btn:hover{
+  background-color: red;
+  color: white;
+}
+
+.main-content {
+  text-align: center;
+  margin-top: 100px;
+  padding: 0 20px;
+}
+
+.main-heading {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+}
+
+.description {
+  color: white;
+  font-size: 1.1rem;
+  max-width: 700px;
+  margin: 0 auto 40px auto;
+}
+
+.search-section {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.search-bar {
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 10px;
+  border: 2px solid #1e90ff;
+  background-color: black;
+  color: #63a4ff;
+  font-size: 16px;
+  outline: none;
+}
+
+.search-bar::placeholder {
+  color: #5c85d6;
+}
+
+.suggestion-box {
+  position: absolute;
+  width: 100%;
+  border-radius: 10px;
+  background-color: rgb(4, 15, 45);
+  margin-top: 10px;
+  list-style: none;
+  max-height: 200px;
+  overflow-y: scroll;
+}
+
+.suggestion-box::-webkit-scrollbar {
+  display: none;
+}
+
+.suggestion-box li {
+  padding: 10px;
+  text-align: left;
+  cursor: pointer;
+  color: #63a4ff;
+  transition: background-color 0.2s;
+}
+
+.suggestion-box li:hover {
+  background-color: rgb(6, 22, 66);
+  color: white;
+}
+
+.suggestion{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  color: rgb(168, 168, 168);
+  position: absolute;
+  bottom: 30px;
+  font-size: small;
+}
+
+.options{
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}

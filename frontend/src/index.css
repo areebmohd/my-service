@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=Outfit:wght@100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=Outfit:wght@100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
 
 * {
   margin: 0;
@@ -9,12 +9,56 @@
 
 body {
   background-color: black;
-  color: #1e90ff; 
+  color: #1e90ff;
   min-height: 100vh;
 }
 
-a{
+.stars {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  background: #000;
+}
+
+.stars::before {
+  content: "";
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  background: transparent;
+  box-shadow: 5vw 10vh #fff, 12vw 33vh #fff, 18vw 80vh #fff, 25vw 55vh #fff,
+    32vw 22vh #fff, 38vw 70vh #fff, 41vw 15vh #fff, 45vw 88vh #fff,
+    50vw 40vh #fff, 56vw 60vh #fff, 61vw 5vh #fff, 68vw 76vh #fff,
+    72vw 50vh #fff, 78vw 90vh #fff, 83vw 25vh #fff, 88vw 65vh #fff,
+    92vw 15vh #fff, 96vw 45vh #fff, 99vw 80vh #fff, 3vw 60vh #fff;
+  opacity: 0.9;
+}
+
+.stars::after {
+  content: "";
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: transparent;
+  box-shadow: 8vw 15vh #ddd, 14vw 45vh #ddd, 20vw 75vh #ddd, 29vw 30vh #ddd,
+    35vw 85vh #ddd, 43vw 65vh #ddd, 52vw 20vh #ddd, 58vw 95vh #ddd,
+    63vw 10vh #ddd, 69vw 70vh #ddd, 74vw 40vh #ddd, 79vw 78vh #ddd,
+    84vw 55vh #ddd, 89vw 18vh #ddd, 94vw 82vh #ddd, 98vw 25vh #ddd,
+    2vw 75vh #ddd, 6vw 35vh #ddd, 16vw 12vh #ddd, 27vw 95vh #ddd;
+  opacity: 0.6;
+}
+
+a {
   text-decoration: none;
   color: rgb(168, 168, 168);
+  cursor: pointer;
+}
+
+svg {
+  fill: white;
+  height: 25px;
   cursor: pointer;
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import API from "../api/api";
 import "./HomePage.css";
 
@@ -8,11 +8,27 @@ const HomePage = () => {
   const [query, setQuery] = useState("");
   const [user, setUser] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
+  const [userInfo, setUserInfo] = useState({});
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
-    if (userData) setUser(JSON.parse(userData));
+    if (userData) {
+      const parsed = JSON.parse(userData);
+      setUser(parsed);
+  
+      const fetchInfo = async () => {
+        try {
+          const res = await API.get(`/user/${parsed.id}`);
+          setUserInfo(res.data || {});
+          console.log(res.data);
+        } catch (error) {
+          console.error(error);
+        }
+      };
+      fetchInfo();
+    }
   }, []);
+  
 
   const handleSearch = async (e) => {
     const value = e.target.value;
@@ -30,65 +46,87 @@ const HomePage = () => {
     }
   };
 
-  // ✅ Go to search results page
   const handleSelectSuggestion = (profession) => {
     navigate(`/search?profession=${encodeURIComponent(profession)}`);
   };
 
-  // ✅ Logout function
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     navigate("/login");
   };
 
-  // ✅ Go to profile
   const goToProfile = () => {
     const user = JSON.parse(localStorage.getItem("user"));
-    if (user?.id){
+    if (user?.id) {
       navigate(`/profile/${user.id}`);
-    }else{
+    } else {
       navigate("/login");
     }
   };
 
   return (
     <div className="homepage">
-      {/* 🔹 Navbar */}
       <nav className="navbar">
-        <div className="logo">MyService.com</div>
-        <div className="nav-links">
-          <button onClick={goToProfile}>My Profile</button>
-          <button onClick={handleLogout} className="logout-btn">Logout</button>
-        </div>
+        <img src={
+            userInfo.profilePic ||
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIf4R5qPKHPNMyAqV-FjS_OTBB8pfUV29Phg&s"
+          } alt="profile" onClick={goToProfile} />
+        <div className="logo">MyService</div>
+        <button className="logout-btn" onClick={handleLogout}>
+          Logout
+        </button>
       </nav>
 
-      {/* 🔹 Main Section */}
       <div className="main-content">
         <h1 className="main-heading">Find the Right Service, Instantly ⚡</h1>
         <p className="description">
-          Welcome to <span>MyService.com</span> — a platform where you can find
-          trusted professionals for anything you need, from home repairs to tech help.
+          Welcome to MyService.com — a platform where you can find
+          trusted professionals for anything you need, from home repairs to tech
+          help.
         </p>
 
-        {/* 🔹 Search Box */}
         <div className="search-section">
           <input
             type="text"
             value={query}
             onChange={handleSearch}
-            placeholder="Search for a service... e.g. someone who can fix lights"
+            placeholder="Search for a profession or professional..."
             className="search-bar"
           />
           {suggestions.length > 0 && (
-            <ul className="suggestions">
+            <ul className="suggestion-box">
               {suggestions.map((s, i) => (
                 <li key={i} onClick={() => handleSelectSuggestion(s.value)}>
-                  {s.type === "user" ? `👤 ${s.value}` : `🧰 ${s.value}`}
-                </li>
+                {s.type === "user" ? (
+                  <div className="suggestion">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                      <path d="M320 312C386.3 312 440 258.3 440 192C440 125.7 386.3 72 320 72C253.7 72 200 125.7 200 192C200 258.3 253.7 312 320 312zM290.3 368C191.8 368 112 447.8 112 546.3C112 562.7 125.3 576 141.7 576L498.3 576C514.7 576 528 562.7 528 546.3C528 447.8 448.2 368 349.7 368L290.3 368z"/>
+                    </svg>
+                    <p>{s.value}</p>
+                  </div>
+                ) : (
+                  <div className="suggestion">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                      <path d="M264 112L376 112C380.4 112 384 115.6 384 120L384 160L256 160L256 120C256 115.6 259.6 112 264 112zM208 120L208 160L128 160C92.7 160 64 188.7 64 224L64 320L576 320L576 224C576 188.7 547.3 160 512 160L432 160L432 120C432 89.1 406.9 64 376 64L264 64C233.1 64 208 89.1 208 120zM576 368L384 368L384 384C384 401.7 369.7 416 352 416L288 416C270.3 416 256 401.7 256 384L256 368L64 368L64 480C64 515.3 92.7 544 128 544L512 544C547.3 544 576 515.3 576 480L576 368z"/>
+                    </svg>
+                    <p>{s.value}</p>
+                  </div>
+                )}
+              </li>
               ))}
             </ul>
           )}
+        </div>
+      </div>
+      <div className="footer">
+        <div className="options">
+          <a href="">Privacy Policy</a>
+          <a href="">Terms & Conditions</a>
+          <a href="">Contact Us</a>
+        </div>
+        <div className="copy">
+          copyright © {new Date().getFullYear()} MyService
         </div>
       </div>
     </div>
