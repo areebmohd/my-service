@@ -171,7 +171,6 @@ const ProfilePage = () => {
     }
   };
 
-  // 📤 Add content with file upload
   const handleAddContent = async (e) => {
     e.preventDefault();
     try {
@@ -199,7 +198,6 @@ const ProfilePage = () => {
     }
   };
 
-  // 🗑 Delete Section
   const handleDeleteSection = async (sectionId) => {
     if (!window.confirm("Are you sure you want to delete this post?")) return;
 
@@ -215,14 +213,12 @@ const ProfilePage = () => {
     }
   };
 
-  // 🔗 Share Section
   const handleShareSection = (sectionId) => {
     const link = `${window.location.origin}/profile/${user._id}?section=${sectionId}`;
     navigator.clipboard.writeText(link);
     alert("Post link copied to clipboard!");
   };
 
-  // Fetch liked users
   const fetchMyLikedUsers = async () => {
     if (!token) {
       setMyLikedIds([]);
@@ -281,12 +277,13 @@ const ProfilePage = () => {
 
   return (
     <div className="profile-page">
-      {/* 🔙 Back Button */}
-      <button className="back-btn" onClick={() => navigate(-1)}>
-        ← Back
-      </button>
+      <div className="nav">
+        {isOwner ? <p>My profile</p> : <p>Profile</p>}
+        <button className="back-btn" onClick={() => navigate(-1)}>
+          Back
+        </button>
+      </div>
 
-      {/* Header */}
       <div className="profile-header">
         <img
           src={
@@ -297,28 +294,47 @@ const ProfilePage = () => {
           className="profile-picture"
         />
         <div className="profile-info">
-          <div className="profile-name-row">
-            <h1>{user.name}</h1>
 
-            {!isOwner && (
-              <button
-                className={`like-btn ${isLiked ? "liked" : ""}`}
-                onClick={handleLikeUser}
-              >
-                {isLiked ? "💖 Liked" : "🤍 Like"}
-              </button>
-            )}
+          <div className="profile-main-row">
+            <p className="name">{user.name}</p>
+            <p className="likes">{user.likes || 0} <p className="likes-text">Likes</p></p>
           </div>
 
-          <p className="likes">Likes: {user.likes || 0}</p>
-          <p className="detail">Profession: {user.profession || "N/A"}</p>
-          <p className="detail">Bio: {user.bio || "N/A"}</p>
-          <p className="detail">Location: {user.location || "N/A"}</p>
-          <p className="detail">City: {user.city || "N/A"}</p>
-          <p className="detail">Country: {user.country || "N/A"}</p>
-          <p className="detail">Timing: {user.timing || "N/A"}</p>
-          <p className="detail">Fee: ₹{user.fee || "N/A"}</p>
-          <p className="detail">Contact: {user.contact || "N/A"}</p>
+          <div className="profession-bio">
+            <p className="profession heading">{user.profession}</p>
+            <p className="bio">{user.bio}</p>
+          </div>
+
+          <div className="address">
+            <div className="location-box">
+              <p className="heading">Location</p>
+              <p className="detail">{user.location || "N/A"}</p>
+            </div>
+            <div className="city-box">
+              <p className="heading">City</p>
+              <p className="detail">{user.city || "N/A"}</p>
+            </div>
+            <div className="country-box">
+              <p className="heading">Country</p>
+              <p className="detail">{user.country || "N/A"}</p>
+            </div>
+          </div>
+
+          <div className="time-fee">
+            <div className="time-box">
+              <p className="heading">Timings</p>
+              <p className="detail">{user.timing || "N/A"}</p>
+            </div>
+            <div className="fee-box">
+              <p className="heading">Fee</p>
+              <p className="detail">₹{user.fee || "N/A"}</p>
+            </div>
+          </div>
+
+          <div className="contact">
+            <p className="heading">Contacts</p>
+            <p className="detail">{user.contact || "N/A"}</p>
+          </div>
 
           {isOwner && (
             <div className="owner-buttons">
@@ -328,8 +344,16 @@ const ProfilePage = () => {
               <button onClick={() => setContentMode(!contentMode)}>
                 {contentMode ? "Cancel Add" : "Add Content"}
               </button>
-              <button onClick={openLikedUsers}>💙 Liked Users</button>
+              <button onClick={openLikedUsers}>Liked Users</button>
             </div>
+          )}
+          {!isOwner && (
+            <button
+              className={`like-btn ${isLiked ? "liked" : ""}`}
+              onClick={handleLikeUser}
+            >
+              {isLiked ? "Liked" : "Like"}
+            </button>
           )}
         </div>
       </div>
@@ -341,7 +365,6 @@ const ProfilePage = () => {
           encType="multipart/form-data"
         >
           <h3>Edit Profile Info</h3>
-          {/* 🧍‍♂️ Name Field */}
           <input
             type="text"
             name="name"
@@ -350,7 +373,6 @@ const ProfilePage = () => {
             onChange={handleEditChange}
           />
 
-          {/* 📧 Email (read-only) */}
           <input
             type="email"
             name="email"
@@ -360,7 +382,6 @@ const ProfilePage = () => {
             style={{ backgroundColor: "black", cursor: "not-allowed" }}
           />
 
-          {/* 🖼 Profile Picture Upload */}
           <div className="profile-pic-edit">
             <label>Profile Picture:</label>
             <input
@@ -373,7 +394,6 @@ const ProfilePage = () => {
                   profilePicFile: file,
                   removeProfilePic: false,
                 }));
-                // optionally preview immediately:
                 setUser((prev) => ({
                   ...prev,
                   profilePic: file
@@ -393,13 +413,11 @@ const ProfilePage = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    // mark removal and clear any selected file
                     setForm((prev) => ({
                       ...prev,
                       removeProfilePic: true,
                       profilePicFile: null,
                     }));
-                    // also update UI immediately
                     setUser((prev) => ({ ...prev, profilePic: "" }));
                   }}
                   style={{
@@ -506,7 +524,6 @@ const ProfilePage = () => {
             }
           />
 
-          {/* 🖼 Upload Images */}
           <label>Upload Images (max 4):</label>
           <input
             type="file"
@@ -518,8 +535,6 @@ const ProfilePage = () => {
               setNewSection({ ...newSection, images: all });
             }}
           />
-
-          {/* Image Preview with Remove Option */}
           <div
             style={{
               display: "flex",
@@ -567,7 +582,6 @@ const ProfilePage = () => {
             ))}
           </div>
 
-          {/* 🎥 Upload Videos */}
           <label>Upload Videos (max 4):</label>
           <input
             type="file"
@@ -580,7 +594,6 @@ const ProfilePage = () => {
             }}
           />
 
-          {/* Video Preview with Remove Option */}
           <div
             style={{
               display: "flex",
@@ -658,7 +671,6 @@ const ProfilePage = () => {
 
                   {sec.showMenu && (
                     <div className="menu-dropdown">
-                      {/* Show Delete only if user owns this profile */}
                       {isOwner && (
                         <button onClick={() => handleDeleteSection(sec._id)}>
                           🗑 Delete
@@ -719,8 +731,8 @@ const ProfilePage = () => {
                   key={u._id}
                   className="liked-user-row"
                   onClick={() => {
-                    setShowLikedUsers(false); // close modal
-                    navigate(`/profile/${u._id}`); // go to profile
+                    setShowLikedUsers(false);
+                    navigate(`/profile/${u._id}`);
                   }}
                   style={{ cursor: "pointer" }}
                 >

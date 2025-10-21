@@ -1,249 +1,291 @@
 .profile-page {
-    background-color: #0d0d0d;
-    color: #1e90ff;
-    min-height: 100vh;
-    padding: 30px 50px;
-  }
-  
-  /* 🔹 Header Section */
-  .profile-header {
-    display: flex;
-    align-items: center;
-    gap: 30px;
-    border-bottom: 1px solid #1e90ff;
-    padding-bottom: 20px;
-    margin-bottom: 30px;
-  }
-  
-  .profile-picture {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    border: 3px solid #1e90ff;
-    object-fit: cover;
-  }
-  
-  .profile-info h1 {
-    color: #63a4ff;
-    margin-bottom: 5px;
-  }
-  
-  .profile-info .likes {
-    font-size: 15px;
-    color: #9ecbff;
-    margin-bottom: 10px;
-  }
-  
-  .detail {
-    margin: 4px 0;
-    color: #5c85d6;
-  }
-  
-  /* 🔹 Owner Buttons */
-  .owner-buttons {
-    margin-top: 15px;
-  }
-  
-  .owner-buttons button {
-    background-color: #1e90ff;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 15px;
-    margin-right: 10px;
-    cursor: pointer;
-    transition: 0.3s ease;
-  }
-  
-  .owner-buttons button:hover {
-    background-color: #63a4ff;
-    box-shadow: 0 0 10px #1e90ff;
-  }
-  
-  /* 🔹 Edit Profile Form */
-  .edit-form,
-  .content-form {
-    background-color: #111;
-    border: 1px solid #1e90ff;
-    border-radius: 10px;
-    padding: 25px;
-    margin-bottom: 30px;
-  }
-  
-  .edit-form h3,
-  .content-form h3 {
-    color: #63a4ff;
-    margin-bottom: 20px;
-  }
-  
-  .edit-form input,
-  .content-form input,
-  .content-form textarea {
-    width: 100%;
-    background-color: #0d0d0d;
-    border: 1px solid #1e90ff;
-    border-radius: 8px;
-    padding: 10px;
-    margin-bottom: 12px;
-    color: #63a4ff;
-    font-size: 15px;
-  }
-  
-  .edit-form button,
-  .content-form button {
-    background-color: #1e90ff;
-    color: #fff;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.3s ease;
-  }
-  
-  .edit-form button:hover,
-  .content-form button:hover {
-    background-color: #63a4ff;
-  }
-  
-  /* 🔹 Custom Sections */
-  .custom-sections {
-    margin-top: 40px;
-  }
-  
-  .section {
-    background-color: #111;
-    border: 1px solid #1e90ff;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 25px;
-  }
-  
-  .section h2 {
-    color: #63a4ff;
-    margin-bottom: 10px;
-  }
-  
-  .section p {
-    color: #9ecbff;
-    margin-bottom: 15px;
-  }
-  
-  .media {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-  }
-  
-  .media img,
-  .media video {
-    width: 200px;
-    height: 150px;
-    border-radius: 8px;
-    border: 1px solid #1e90ff;
-    object-fit: cover;
-  }
-  
-  .no-content {
-    color: #5c85d6;
-    text-align: center;
-    margin-top: 40px;
-  }
-  
-  .profession-input {
-    position: relative;
-  }
-  
-  .suggestions {
-    position: absolute;
-    background: black;
-    border: 1px solid #ccc;
-    width: 100%;
-    list-style: none;
-    max-height: 150px;
-    overflow-y: auto;
-    margin: 0;
-    padding: 0;
-    z-index: 10;
-  }
-  
-  .suggestions li {
-    padding: 8px;
-    cursor: pointer;
-  }
-  
-  .suggestions li:hover {
-    background: #f0f0f0;
-  }
-  
-  .profession-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-  }
-  
-  .tag {
-    background: #e0e7ff;
-    color: #1e3a8a;
-    padding: 4px 8px;
-    border-radius: 12px;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-  }
-  
-  .tag button {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    color: #555;
-  }
+  min-height: 100vh;
+  padding: 30px 50px;
+}
 
-  .like-btn {
-    padding: 6px 14px;
-    border: none;
-    border-radius: 8px;
-    background-color: #f0f0f0;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-  
-  .like-btn.liked {
-    background-color: #ff4d4d;
-    color: white;
-  }
-  
-  .like-btn:hover {
-    transform: scale(1.05);
-  }
+.nav{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 30px;
+}
 
-  .edit-form input {
-    margin: 6px 0;
-    padding: 8px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-  }
+.nav p{
+  font-size: 40px;
+  color: white;
+}
 
-  /* 🔙 Back Button */
-.back-btn {
-  background-color: transparent;
-  color: #63a4ff;
-  border: 1px solid #1e90ff;
+.nav button {
+  background-color: white;
+  border: none;
+  color: black;
+  padding: 10px 20px;
   border-radius: 8px;
-  padding: 8px 15px;
-  font-weight: 600;
-  margin-bottom: 15px;
   cursor: pointer;
   transition: 0.3s ease;
 }
 
-.back-btn:hover {
-  background-color: #1e90ff;
+.nav button:hover {
+  background-color: blue;
   color: white;
-  box-shadow: 0 0 10px #1e90ff;
 }
 
-/* 📂 Upload file inputs */
+.profile-header {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.profile-picture {
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile-info{
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.profile-main-row{
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-main-row .name{
+  color: white;
+  font-size: 40px;
+  font-weight: bold;
+}
+
+.profile-main-row .likes{
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.profile-main-row .likes .likes-text{
+  color: rgb(174, 174, 174);
+}
+
+.profession-bio{
+  display: flex;
+  flex-direction: column;
+  color: white;
+}
+
+.bio{
+  color: rgb(174, 174, 174);
+}
+
+.address, .time-fee {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.location-box, .city-box, .country-box, .time-box, .fee-box {
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+}
+
+.heading{
+  color: white;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.owner-buttons {
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.owner-buttons button {
+  background-color: blue;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.owner-buttons button:hover {
+  background-color: #1e90ff;
+  box-shadow: 0 0 5px #1e90ff;
+}
+
+.like-btn {
+  background-color: white;
+  color: black;
+  border: none;
+  border-radius: 10px;
+  margin-top: 15px;
+  width: fit-content;
+  padding: 10px 50px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.liked {
+  background-color: red;
+  color: white;
+}
+
+.like-btn:hover {
+  transform: scale(1.05);
+}
+
+.edit-form,
+.content-form {
+  background-color: #111;
+  border: 1px solid #1e90ff;
+  border-radius: 10px;
+  padding: 25px;
+  margin-bottom: 30px;
+}
+
+.edit-form h3,
+.content-form h3 {
+  color: #63a4ff;
+  margin-bottom: 20px;
+}
+
+.edit-form input,
+.content-form input,
+.content-form textarea {
+  width: 100%;
+  background-color: #0d0d0d;
+  border: 1px solid #1e90ff;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 12px;
+  color: #63a4ff;
+  font-size: 15px;
+}
+
+.edit-form button,
+.content-form button {
+  background-color: #1e90ff;
+  color: #fff;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.edit-form button:hover,
+.content-form button:hover {
+  background-color: #63a4ff;
+}
+
+.custom-sections {
+  margin-top: 40px;
+}
+
+.section {
+  background-color: #111;
+  border: 1px solid #1e90ff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 25px;
+}
+
+.section h2 {
+  color: #63a4ff;
+  margin-bottom: 10px;
+}
+
+.section p {
+  color: #9ecbff;
+  margin-bottom: 15px;
+}
+
+.media {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.media img,
+.media video {
+  width: 200px;
+  height: 150px;
+  border-radius: 8px;
+  border: 1px solid #1e90ff;
+  object-fit: cover;
+}
+
+.no-content {
+  color: #5c85d6;
+  text-align: center;
+  margin-top: 40px;
+}
+
+.profession-input {
+  position: relative;
+}
+
+.suggestions {
+  position: absolute;
+  background: black;
+  border: 1px solid #ccc;
+  width: 100%;
+  list-style: none;
+  max-height: 150px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  z-index: 10;
+}
+
+.suggestions li {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.suggestions li:hover {
+  background: #f0f0f0;
+}
+
+.profession-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.tag {
+  background: #e0e7ff;
+  color: #1e3a8a;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tag button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #555;
+}
+
+.edit-form input {
+  margin: 6px 0;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
 .content-form label {
   display: block;
   margin-top: 10px;
@@ -270,7 +312,7 @@
   background: black;
   border: 1px solid #ccc;
   border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   z-index: 100;
   display: flex;
   flex-direction: column;
@@ -331,10 +373,3 @@
   flex-shrink: 0;
   object-fit: cover;
 }
-
-
-
-  
-  
-  
-  

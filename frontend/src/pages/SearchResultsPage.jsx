@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import API from "../api/api.js";
 import "./SearchResultsPage.css";
 import { useLocation, useNavigate } from "react-router-dom";
+import Select from "react-select";
 
 const SearchResultsPage = () => {
   const [users, setUsers] = useState([]);
@@ -14,10 +15,45 @@ const SearchResultsPage = () => {
   const query = new URLSearchParams(useLocation().search);
   const profession = query.get("profession") || "";
 
+  const customSelectStyles = {
+    control: (base, state) => ({
+      ...base,
+      backgroundColor: "transparent",
+      border: "2px solid #1e90ff",
+      borderRadius: "10px",
+      width: "300px",
+      boxShadow: "none",
+      "&:hover": {
+        borderColor: "#1e90ff",
+      },
+    }),
+    singleValue: (base) => ({
+      ...base,
+      color: "white",
+    }),
+    menu: (base) => ({
+      ...base,
+      backgroundColor: "rgb(4, 15, 45)",
+      borderRadius: "10px",
+      paddingTop: "5px",
+      paddingBottom: "5px",
+      zIndex: 10,
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isFocused ? "rgb(6, 22, 66)" : "transparent",
+      color: state.isFocused ? "white" : "#63a4ff",
+      cursor: "pointer",
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: "#63a4ff",
+    }),
+  };
+
   useEffect(() => {
     const fetchResults = async () => {
       try {
-        // Extract fee range if selected
         let minFee = "";
         let maxFee = "";
         if (feeFilter) {
@@ -42,64 +78,112 @@ const SearchResultsPage = () => {
       }
     };
 
-    // 🔹 Refetch whenever any filter/sort changes
     fetchResults();
   }, [profession, feeFilter, locationFilter, likesSort, accountAgeSort]);
 
   return (
     <div className="search-results-page">
       <header className="results-header">
-        <h1>
-          Results for: <span>{decodeURIComponent(profession)}</span>
-        </h1>
+        <p>Results for {decodeURIComponent(profession)}</p>
 
-        <button className="back-btn" onClick={() => navigate("/")}>
-          ← Back to Home
+        <button className="backBtn" onClick={() => navigate("/")}>
+          Back
         </button>
       </header>
 
       <div className="filters">
-        {/* 💰 Fee */}
-        <select
-          value={feeFilter}
-          onChange={(e) => setFeeFilter(e.target.value)}
-        >
-          <option value="">Filter by Fee</option>
-          <option value="0-500">₹0 - ₹500</option>
-          <option value="501-1000">₹501 - ₹1000</option>
-          <option value="1001-5000">₹1001 - ₹5000</option>
-          <option value="5001-10000">₹5001 - ₹10000</option>
-        </select>
+        <Select
+          value={
+            feeFilter
+              ? {
+                  value: feeFilter,
+                  label: `₹${feeFilter.replace("-", " - ₹")}`,
+                }
+              : null
+          }
+          onChange={(option) =>
+            setFeeFilter(
+              option && option.value === feeFilter ? "" : option?.value || ""
+            )
+          }
+          options={[
+            { value: "0-500", label: "₹0 - ₹500" },
+            { value: "500-1000", label: "₹500 - ₹1000" },
+            { value: "1000-5000", label: "₹1000 - ₹5000" },
+            { value: "5000-10000", label: "₹5000 - ₹10000" },
+          ]}
+          placeholder="Filter by Fee"
+          styles={customSelectStyles}
+        />
 
-        {/* 📍 Location */}
-        <select
-          value={locationFilter}
-          onChange={(e) => setLocationFilter(e.target.value)}
-        >
-          <option value="">Filter by Location</option>
-          <option value="same-city">Same City</option>
-          <option value="same-country">Same Country</option>
-          <option value="different-country">Different Country</option>
-        </select>
+        <Select
+          value={
+            locationFilter
+              ? {
+                  value: locationFilter,
+                  label:
+                    locationFilter === "same-city"
+                      ? "Same City"
+                      : locationFilter === "same-country"
+                      ? "Same Country"
+                      : "Different Country",
+                }
+              : null
+          }
+          onChange={(option) =>
+            setLocationFilter(
+              option && option.value === locationFilter
+                ? ""
+                : option?.value || ""
+            )
+          }
+          options={[
+            { value: "same-city", label: "Same City" },
+            { value: "same-country", label: "Same Country" },
+            { value: "different-country", label: "Different Country" },
+          ]}
+          placeholder="Filter by Location"
+          styles={customSelectStyles}
+        />
 
-        {/* ❤️ Likes */}
-        <select
-          value={likesSort}
-          onChange={(e) => setLikesSort(e.target.value)}
-        >
-          <option value="">Sort by Likes</option>
-          <option value="highest">Highest Likes</option>
-        </select>
+        <Select
+          value={
+            likesSort ? { value: likesSort, label: "Highest Likes" } : null
+          }
+          onChange={(option) =>
+            setLikesSort(
+              option && option.value === likesSort ? "" : option?.value || ""
+            )
+          }
+          options={[{ value: "highest", label: "Highest Likes" }]}
+          placeholder="Sort by Likes"
+          styles={customSelectStyles}
+        />
 
-        {/* 🕓 Account Age */}
-        <select
-          value={accountAgeSort}
-          onChange={(e) => setAccountAgeSort(e.target.value)}
-        >
-          <option value="">Sort by Account Age</option>
-          <option value="new">New Accounts</option>
-          <option value="old">Old Accounts</option>
-        </select>
+        <Select
+          value={
+            accountAgeSort
+              ? {
+                  value: accountAgeSort,
+                  label:
+                    accountAgeSort === "new" ? "New Accounts" : "Old Accounts",
+                }
+              : null
+          }
+          onChange={(option) =>
+            setAccountAgeSort(
+              option && option.value === accountAgeSort
+                ? ""
+                : option?.value || ""
+            )
+          }
+          options={[
+            { value: "new", label: "New Accounts" },
+            { value: "old", label: "Old Accounts" },
+          ]}
+          placeholder="Sort by Account Age"
+          styles={customSelectStyles}
+        />
       </div>
 
       <div className="results-grid">
@@ -118,20 +202,15 @@ const SearchResultsPage = () => {
                 alt={user.name}
                 className="profile-pic"
               />
-              <h3>{user.name}</h3>
-              <p className="profession">{user.profession}</p>
-              <p className="location">
-                {user.city}, {user.country}
-              </p>
-              <p className="fee">Fee: ₹{user.fee || "N/A"}</p>
-              <p className="likes">❤️ {user.likes || 0} Likes</p>
-              <p className="joined">
-                Joined: {new Date(user.createdAt).toLocaleDateString()}
-              </p>
+              <div className="details">
+                <p className="username">{user.name}</p>
+                <p className="profession">{user.profession}</p>
+                <p className="likes">{user.likes || 0} Likes</p>
+              </div>
             </div>
           ))
         ) : (
-          <p className="no-results">No professionals found 😕</p>
+          <p>No professionals found.</p>
         )}
       </div>
     </div>
