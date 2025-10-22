@@ -278,7 +278,7 @@ const ProfilePage = () => {
   return (
     <div className="profile-page">
       <div className="nav">
-        {isOwner ? <p>My profile</p> : <p>Profile</p>}
+        {isOwner ? <p>My Profile</p> : <p>Profile</p>}
         <button className="back-btn" onClick={() => navigate(-1)}>
           Back
         </button>
@@ -294,10 +294,11 @@ const ProfilePage = () => {
           className="profile-picture"
         />
         <div className="profile-info">
-
           <div className="profile-main-row">
             <p className="name">{user.name}</p>
-            <p className="likes">{user.likes || 0} <p className="likes-text">Likes</p></p>
+            <p className="likes">
+              {user.likes || 0} Likes
+            </p>
           </div>
 
           <div className="profession-bio">
@@ -364,26 +365,28 @@ const ProfilePage = () => {
           onSubmit={handleUpdateProfile}
           encType="multipart/form-data"
         >
-          <h3>Edit Profile Info</h3>
-          <input
-            type="text"
-            name="name"
-            placeholder="Full Name"
-            value={form.name}
-            onChange={handleEditChange}
-          />
+          <p className="heading">Edit Profile Info</p>
+          <div className="pair">
+            <input
+              type="text"
+              name="name"
+              placeholder="Full Name"
+              value={form.name}
+              onChange={handleEditChange}
+            />
 
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={user.email || ""}
-            readOnly
-            style={{ backgroundColor: "black", cursor: "not-allowed" }}
-          />
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={user.email || ""}
+              readOnly
+              style={{ cursor: "not-allowed" }}
+            />
+          </div>
 
           <div className="profile-pic-edit">
-            <label>Profile Picture:</label>
+            <label>Profile Picture</label>
             <input
               type="file"
               accept="image/*"
@@ -404,7 +407,7 @@ const ProfilePage = () => {
             />
 
             {user.profilePic && (
-              <div style={{ marginTop: "10px" }}>
+              <div className="edit-profile-pic">
                 <img
                   src={user.profilePic}
                   alt="Current"
@@ -421,9 +424,8 @@ const ProfilePage = () => {
                     setUser((prev) => ({ ...prev, profilePic: "" }));
                   }}
                   style={{
-                    marginLeft: 10,
                     background: "red",
-                    color: "#fff",
+                    color: "white",
                     border: "none",
                     padding: "6px 10px",
                     borderRadius: 6,
@@ -466,36 +468,41 @@ const ProfilePage = () => {
             value={form.location}
             onChange={handleEditChange}
           />
-          <input
-            type="text"
-            name="city"
-            placeholder="City"
-            value={form.city || ""}
-            onChange={handleEditChange}
-          />
-          <input
-            type="text"
-            name="country"
-            placeholder="Country"
-            value={form.country || ""}
-            onChange={handleEditChange}
-          />
-          <input
-            type="text"
-            name="timing"
-            placeholder="Timing"
-            value={form.timing}
-            onChange={handleEditChange}
-          />
-          <input
-            type="number"
-            name="fee"
-            placeholder="Fee"
-            value={form.fee}
-            onChange={handleEditChange}
-          />
-          <input
-            type="text"
+          <div className="pair">
+            <input
+              type="text"
+              name="city"
+              placeholder="City"
+              value={form.city || ""}
+              onChange={handleEditChange}
+            />
+            <input
+              type="text"
+              name="country"
+              placeholder="Country"
+              value={form.country || ""}
+              onChange={handleEditChange}
+            />
+          </div>
+
+          <div className="pair">
+            <input
+              type="text"
+              name="timing"
+              placeholder="Timing"
+              value={form.timing}
+              onChange={handleEditChange}
+            />
+            <input
+              type="number"
+              name="fee"
+              placeholder="Fee"
+              value={form.fee}
+              onChange={handleEditChange}
+            />
+          </div>
+
+          <textarea
             name="contact"
             placeholder="Contact"
             value={form.contact}
@@ -507,7 +514,7 @@ const ProfilePage = () => {
 
       {contentMode && (
         <form className="content-form" onSubmit={handleAddContent}>
-          <h3>Add Custom Section</h3>
+          <p className="heading">Add Custom Section</p>
           <input
             type="text"
             placeholder="Section Title"
@@ -524,120 +531,122 @@ const ProfilePage = () => {
             }
           />
 
-          <label>Upload Images (max 4):</label>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={(e) => {
-              const selected = Array.from(e.target.files);
-              const all = [...newSection.images, ...selected].slice(0, 4); // merge + limit 4
-              setNewSection({ ...newSection, images: all });
-            }}
-          />
-          <div
-            style={{
-              display: "flex",
-              overflowX: "auto",
-              gap: "10px",
-              marginTop: "10px",
-              height: "400px",
-            }}
-          >
-            {newSection.images.map((file, index) => (
-              <div key={index} style={{ position: "relative" }}>
-                <img
-                  src={URL.createObjectURL(file)}
-                  alt="preview"
-                  style={{
-                    height: "100%",
-                    borderRadius: "10px",
-                    objectFit: "cover",
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() =>
-                    setNewSection({
-                      ...newSection,
-                      images: newSection.images.filter((_, i) => i !== index),
-                    })
-                  }
-                  style={{
-                    position: "absolute",
-                    top: "5px",
-                    right: "5px",
-                    background: "rgba(0,0,0,0.6)",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "50%",
-                    width: "25px",
-                    height: "25px",
-                    cursor: "pointer",
-                  }}
-                >
-                  ✖
-                </button>
-              </div>
-            ))}
+          <div className="upload-section">
+            <label>Upload Images (max 4)</label>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={(e) => {
+                const selected = Array.from(e.target.files);
+                const all = [...newSection.images, ...selected].slice(0, 4); // merge + limit 4
+                setNewSection({ ...newSection, images: all });
+              }}
+            />
+            <div
+              style={{
+                display: "flex",
+                overflowX: "auto",
+                gap: "10px",
+                alignItems: "center",
+              }}
+            >
+              {newSection.images.map((file, index) => (
+                <div key={index} style={{ position: "relative" }}>
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt="preview"
+                    style={{
+                      height: "200px",
+                      borderRadius: "10px",
+                      objectFit: "cover",
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setNewSection({
+                        ...newSection,
+                        images: newSection.images.filter((_, i) => i !== index),
+                      })
+                    }
+                    style={{
+                      position: "absolute",
+                      top: "5px",
+                      right: "5px",
+                      background: "transparent",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "50%",
+                      width: "25px",
+                      height: "25px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    ✖
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <label>Upload Videos (max 4):</label>
-          <input
-            type="file"
-            accept="video/*"
-            multiple
-            onChange={(e) => {
-              const selected = Array.from(e.target.files);
-              const all = [...newSection.videos, ...selected].slice(0, 4); // merge + limit 4
-              setNewSection({ ...newSection, videos: all });
-            }}
-          />
+          <div className="upload-section">
+            <label>Upload Videos (max 4)</label>
+            <input
+              type="file"
+              accept="video/*"
+              multiple
+              onChange={(e) => {
+                const selected = Array.from(e.target.files);
+                const all = [...newSection.videos, ...selected].slice(0, 4); // merge + limit 4
+                setNewSection({ ...newSection, videos: all });
+              }}
+            />
 
-          <div
-            style={{
-              display: "flex",
-              overflowX: "auto",
-              gap: "10px",
-              marginTop: "10px",
-              height: "400px",
-            }}
-          >
-            {newSection.videos.map((file, index) => (
-              <div key={index} style={{ position: "relative" }}>
-                <video
-                  src={URL.createObjectURL(file)}
-                  controls
-                  style={{
-                    height: "100%",
-                    borderRadius: "10px",
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() =>
-                    setNewSection({
-                      ...newSection,
-                      videos: newSection.videos.filter((_, i) => i !== index),
-                    })
-                  }
-                  style={{
-                    position: "absolute",
-                    top: "5px",
-                    right: "5px",
-                    background: "rgba(0,0,0,0.6)",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "50%",
-                    width: "25px",
-                    height: "25px",
-                    cursor: "pointer",
-                  }}
-                >
-                  ✖
-                </button>
-              </div>
-            ))}
+            <div
+              style={{
+                display: "flex",
+                overflowX: "auto",
+                gap: "10px",
+                alignItems: "center",
+              }}
+            >
+              {newSection.videos.map((file, index) => (
+                <div key={index} style={{ position: "relative" }}>
+                  <video
+                    src={URL.createObjectURL(file)}
+                    controls
+                    style={{
+                      height: "200px",
+                      borderRadius: "10px",
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setNewSection({
+                        ...newSection,
+                        videos: newSection.videos.filter((_, i) => i !== index),
+                      })
+                    }
+                    style={{
+                      position: "absolute",
+                      top: "5px",
+                      right: "5px",
+                      background: "transparent",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "50%",
+                      width: "25px",
+                      height: "25px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    ✖
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
 
           <button type="submit">Add Section</button>
@@ -649,9 +658,7 @@ const ProfilePage = () => {
           user.sections.map((sec, i) => (
             <div className="section" key={i}>
               <div className="section-header">
-                <h2>{sec.title}</h2>
-
-                {/* ⋮ Options Menu */}
+                <p className="title">{sec.title}</p>
                 <div className="menu-container">
                   <button
                     className="menu-btn"
@@ -673,39 +680,25 @@ const ProfilePage = () => {
                     <div className="menu-dropdown">
                       {isOwner && (
                         <button onClick={() => handleDeleteSection(sec._id)}>
-                          🗑 Delete
+                          Delete
                         </button>
                       )}
                       <button onClick={() => handleShareSection(sec._id)}>
-                        🔗 Share
+                        Share
                       </button>
                     </div>
                   )}
                 </div>
               </div>
 
-              <p>{sec.description}</p>
+              <p className="desc">{sec.description}</p>
 
               <div className="media">
                 {sec.images?.map((img, idx) => (
-                  <img
-                    key={idx}
-                    src={img}
-                    alt="user content"
-                    style={{
-                      width: "200px",
-                      borderRadius: "10px",
-                      margin: "10px",
-                    }}
-                  />
+                  <img key={idx} src={img} alt="user content" />
                 ))}
                 {sec.videos?.map((vid, idx) => (
-                  <video
-                    key={idx}
-                    src={vid}
-                    controls
-                    style={{ width: "300px", margin: "10px" }}
-                  />
+                  <video key={idx} src={vid} controls />
                 ))}
               </div>
             </div>
@@ -718,13 +711,15 @@ const ProfilePage = () => {
       {showLikedUsers && (
         <div className="liked-users-modal">
           <div className="modal-content">
-            <h3>💙 Users You Liked</h3>
-            <button
-              className="close-btn"
-              onClick={() => setShowLikedUsers(false)}
-            >
-              ✖ Close
-            </button>
+            <div className="like-head">
+              <p>Liked Users</p>
+              <button
+                className="close-btn"
+                onClick={() => setShowLikedUsers(false)}
+              >
+                ✖
+              </button>
+            </div>
             {likedUsersList.length > 0 ? (
               likedUsersList.map((u) => (
                 <div
