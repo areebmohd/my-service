@@ -116,20 +116,4 @@
   gap: 10px;
 }
 
-.footer{
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  color: rgb(168, 168, 168);
-  position: absolute;
-  bottom: 30px;
-  font-size: small;
-}
 
-.options{
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}

@@ -1,0 +1,50 @@
+.footer{
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    color: rgb(168, 168, 168);
+    position: absolute;
+    bottom: 30px;
+    font-size: small;
+  }
+  
+  .options{
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .options p{
+    cursor: pointer;
+  }
+
+  .main{
+    background-color: rgb(4, 15, 45);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    color: white;
+    padding: 25px;
+    width: 700px;
+    max-height: 700px;
+    overflow: scroll;
+    scrollbar-width: none;
+    font-size: large;
+    position: absolute;
+    top: 30px;
+  }
+
+  .main-top{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .close-btn{
+    cursor: pointer;
+    font-size: large;
+  }

@@ -51,12 +51,6 @@ body {
   opacity: 0.6;
 }
 
-a {
-  text-decoration: none;
-  color: rgb(168, 168, 168);
-  cursor: pointer;
-}
-
 svg {
   fill: white;
   height: 25px;

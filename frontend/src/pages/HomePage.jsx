@@ -2,8 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import API from "../api/api";
 import "./HomePage.css";
+import Footer from "../../components/Footer";
+import PrivacyPolicy from "../../components/Policy";
+import TermsConditions from "../../components/TermsConditions";
+import ContactUs from "../../components/ContactUs";
 
-const HomePage = () => {
+const HomePage = ({activeSection, setActiveSection}) => {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [user, setUser] = useState(null);
@@ -119,16 +123,10 @@ const HomePage = () => {
           )}
         </div>
       </div>
-      <div className="footer">
-        <div className="options">
-          <a href="">Privacy Policy</a>
-          <a href="">Terms & Conditions</a>
-          <a href="">Contact Us</a>
-        </div>
-        <div className="copy">
-          copyright © {new Date().getFullYear()} MyService
-        </div>
-      </div>
+      <Footer setActiveSection={setActiveSection}/>
+      {activeSection === "privacy" && <PrivacyPolicy setActiveSection={setActiveSection}/>}
+      {activeSection === "terms" && <TermsConditions setActiveSection={setActiveSection}/>}
+      {activeSection === "contact" && <ContactUs setActiveSection={setActiveSection}/>}
     </div>
   );
 };

@@ -2,8 +2,12 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/api";
 import "./LoginRegister.css";
+import Footer from "../../components/Footer";
+import PrivacyPolicy from "../../components/Policy";
+import TermsConditions from "../../components/TermsConditions";
+import ContactUs from "../../components/ContactUs";
 
-const LoginRegisterPage = () => {
+const LoginRegisterPage = ({activeSection, setActiveSection}) => {
   const [isLogin, setIsLogin] = useState(true);
   const [isForgot, setIsForgot] = useState(false);
   const [otpMode, setOtpMode] = useState(false);
@@ -172,16 +176,10 @@ const LoginRegisterPage = () => {
           </p>
         )}
       </div>
-      <div className="footer">
-        <div className="options">
-          <a href="">Privacy Policy</a>
-          <a href="">Terms & Conditions</a>
-          <a href="">Contact Us</a>
-        </div>
-        <div className="copy">
-          copyright © {new Date().getFullYear()} MyService
-        </div>
-      </div>
+      <Footer setActiveSection={setActiveSection}/>
+      {activeSection === "privacy" && <PrivacyPolicy setActiveSection={setActiveSection}/>}
+      {activeSection === "terms" && <TermsConditions setActiveSection={setActiveSection}/>}
+      {activeSection === "contact" && <ContactUs setActiveSection={setActiveSection}/>}
     </div>
   );
 };
