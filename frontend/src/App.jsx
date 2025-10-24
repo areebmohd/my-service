@@ -5,6 +5,8 @@ import LoginRegisterPage from "./pages/LoginRegisterPage";
 import SearchResultsPage from "./pages/SearchResultsPage";
 import ProfilePage from "./pages/ProfilePage";
 import { useState } from "react";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   const token = localStorage.getItem("token");
@@ -18,6 +20,16 @@ function App() {
         <Route path="/search" element={<SearchResultsPage />} />
         <Route path="/profile/:id" element={<ProfilePage />} />
       </Routes>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="colored"
+      />
     </Router>
   );
 }

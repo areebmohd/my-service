@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../api/api";
 import "./ProfilePage.css";
+import { toast } from "react-toastify";
 
 const ProfilePage = () => {
   const { id } = useParams();
@@ -26,7 +27,6 @@ const ProfilePage = () => {
   const token = localStorage.getItem("token");
   const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
 
-  // Fetch profile and liked users
   useEffect(() => {
     const fetchAll = async () => {
       try {
@@ -77,11 +77,55 @@ const ProfilePage = () => {
     fetchAll();
   }, [id, token]);
 
+  const confirmToast = (message, onConfirm) => {
+    const toastId = toast.info(
+      ({ closeToast }) => (
+        <div>
+          <p>{message}</p>
+          <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
+            <button
+              style={{
+                background: "blue",
+                border: "none",
+                padding: "5px 10px",
+                borderRadius: "5px",
+                color: "white",
+                outline: "none",
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                onConfirm();
+                toast.dismiss(toastId);
+              }}
+            >
+              Yes
+            </button>
+            <button
+              style={{
+                background: "red",
+                border: "none",
+                padding: "5px 10px",
+                borderRadius: "5px",
+                color: "white",
+                outline: "none",
+                cursor: "pointer",
+              }}
+              onClick={() => toast.dismiss(toastId)}
+            >
+              No
+            </button>
+          </div>
+        </div>
+      ),
+      { autoClose: false, closeOnClick: false }
+    );
+  };
+
   const handleProfessionInput = async (e) => {
     const value = e.target.value;
     setForm({ ...form, profession: value });
-    setIsValidProfession(false); // reset validity when user types
-  
+    setIsValidProfession(false);
+
     if (value.trim().length > 1) {
       try {
         const res = await API.post("/user/suggest", { query: value });
@@ -92,25 +136,22 @@ const ProfilePage = () => {
     } else {
       setSuggestions([]);
     }
-  };  
+  };
 
   const handleSelectProfession = (profession) => {
     setForm({ ...form, profession });
     setSuggestions([]);
     setIsValidProfession(true);
   };
-  
 
   const handleEditChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  // Update profile
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     try {
       const fd = new FormData();
 
-      // append textual fields (explicit list)
       const fields = [
         "name",
         "profession",
@@ -126,20 +167,19 @@ const ProfilePage = () => {
         if (form[k] !== undefined && form[k] !== null) fd.append(k, form[k]);
       });
 
-      // profile picture file (if selected)
       if (form.profilePicFile) {
         fd.append("profilePic", form.profilePicFile);
       }
 
-      // removal flag: append 'true' string when user wants to remove
       if (form.removeProfilePic) {
         fd.append("removeProfilePic", "true");
       }
 
-      if (!isValidProfession) {
-        alert("⚠️ Please select a valid profession from suggestions.");
+      if (form.profession === user.profession) {
+      } else if (!isValidProfession) {
+        toast.warning("Please select a valid profession from suggestions.");
         return;
-      }      
+      }
 
       const res = await API.put(`/user/update/${user._id}`, fd, {
         headers: {
@@ -148,10 +188,8 @@ const ProfilePage = () => {
         },
       });
 
-      // server returns { user: updated }
       const updatedUser = res.data?.user || res.data;
       setUser(updatedUser);
-      // reset editing form fields (you can reinit from updated user)
       setForm({
         name: updatedUser.name || "",
         profession: updatedUser.profession || "",
@@ -164,7 +202,7 @@ const ProfilePage = () => {
         contact: updatedUser.contact || "",
       });
       setEditMode(false);
-      alert("Profile updated!");
+      toast.success("Profile updated successfully!");
     } catch (err) {
       console.error("Failed update:", err);
       if (
@@ -172,9 +210,11 @@ const ProfilePage = () => {
         err.response.status === 400 &&
         err.response.data.message === "Name already taken"
       ) {
-        alert("⚠️ This name is already taken. Please choose a different name.");
+        toast.warn(
+          "This name is already taken. Please choose a different name."
+        );
       } else {
-        alert("❌ Failed to update profile. Try again later.");
+        toast.error("Failed to update profile. Try again later.");
       }
     }
   };
@@ -199,32 +239,32 @@ const ProfilePage = () => {
       setUser(res.data.user);
       setContentMode(false);
       setNewSection({ title: "", description: "", images: [], videos: [] });
-      alert("Content added!");
+      toast.success("🎉 Content added!");
     } catch (err) {
       console.error(err);
-      alert("Failed to add content");
+      toast.error("Failed to add content");
     }
   };
 
   const handleDeleteSection = async (sectionId) => {
-    if (!window.confirm("Are you sure you want to delete this post?")) return;
-
-    try {
-      const res = await API.delete(`/user/section/${user._id}/${sectionId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setUser(res.data.user);
-      alert("Post deleted!");
-    } catch (err) {
-      console.error("Error deleting section:", err);
-      alert("Failed to delete post.");
-    }
+    confirmToast("Are you sure you want to delete this post?", async () => {
+      try {
+        const res = await API.delete(`/user/section/${user._id}/${sectionId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUser(res.data.user);
+        toast.success("Post deleted successfully!");
+      } catch (err) {
+        console.error("Error deleting section:", err);
+        toast.error("Failed to delete post.");
+      }
+    });
   };
 
   const handleShareSection = (sectionId) => {
     const link = `${window.location.origin}/profile/${user._id}?section=${sectionId}`;
     navigator.clipboard.writeText(link);
-    alert("Post link copied to clipboard!");
+    toast.info("Post link copied to clipboard!");
   };
 
   const fetchMyLikedUsers = async () => {
@@ -251,7 +291,7 @@ const ProfilePage = () => {
 
   const handleLikeUser = async () => {
     if (!token) {
-      alert("Please login to like users");
+      toast.warn("Please login to like users");
       navigate("/login");
       return;
     }
@@ -272,7 +312,7 @@ const ProfilePage = () => {
       await fetchMyLikedUsers();
     } catch (err) {
       console.error("Like/unlike error:", err);
-      alert("Could not toggle like. Try again.");
+      toast.error("Could not toggle like. Try again.");
     }
   };
 
@@ -454,7 +494,7 @@ const ProfilePage = () => {
             {suggestions.length > 0 && (
               <ul className="suggestions">
                 {suggestions
-                  .filter((s) => s.type === "profession") 
+                  .filter((s) => s.type === "profession")
                   .map((s, i) => (
                     <li key={i} onClick={() => handleSelectProfession(s.value)}>
                       {s.value}

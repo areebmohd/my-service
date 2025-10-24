@@ -14,13 +14,9 @@ app.use(cors());
 
 const __dirname = path.resolve();
 
-// serve uploads statically (single line, correct path)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-// API routes
 app.use("/api/user", userRoutes);
 
-// start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

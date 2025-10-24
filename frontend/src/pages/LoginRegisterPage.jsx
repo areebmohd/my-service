@@ -6,8 +6,9 @@ import Footer from "../../components/Footer";
 import PrivacyPolicy from "../../components/Policy";
 import TermsConditions from "../../components/TermsConditions";
 import ContactUs from "../../components/ContactUs";
+import { toast } from "react-toastify";
 
-const LoginRegisterPage = ({activeSection, setActiveSection}) => {
+const LoginRegisterPage = ({ activeSection, setActiveSection }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [isForgot, setIsForgot] = useState(false);
   const [otpMode, setOtpMode] = useState(false);
@@ -33,19 +34,64 @@ const LoginRegisterPage = ({activeSection, setActiveSection}) => {
     setOtpMode(false);
   };
 
+  const confirmToast = (message, onConfirm) => {
+    const toastId = toast.info(
+      ({ closeToast }) => (
+        <div>
+          <p>{message}</p>
+          <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
+            <button
+              style={{
+                background: "blue",
+                border: "none",
+                padding: "5px 10px",
+                borderRadius: "5px",
+                color: "white",
+                outline:"none",
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                onConfirm();
+                toast.dismiss(toastId);
+              }}
+            >
+              Yes
+            </button>
+            <button
+              style={{
+                background: "red",
+                border: "none",
+                padding: "5px 10px",
+                borderRadius: "5px",
+                color: "white",
+                outline:"none",
+                cursor: "pointer",
+              }}
+              onClick={() => toast.dismiss(toastId)}
+            >
+              No
+            </button>
+          </div>
+        </div>
+      ),
+      { autoClose: false, closeOnClick: false }
+    );
+  };
+
   const handleForgotPassword = async () => {
-    if (!form.email) return alert("Please enter your email first!");
-
-    const confirmReset = window.confirm("Do you want to reset your password?");
-    if (!confirmReset) return;
-
-    try {
-      const res = await API.post("/user/send-reset-otp", { email: form.email });
-      alert(res.data.message);
-      setOtpMode(true); // switch UI to OTP mode
-    } catch (err) {
-      alert(err.response?.data?.message || "Error sending OTP");
+    if (!form.email) {
+      toast.warn("Please enter your email first!");
+      return;
     }
+    confirmToast("Do you want to reset your password?", async () => {
+      try {
+        const res = await API.post("/user/send-reset-otp", { email: form.email });
+        toast.success(res.data.message || "OTP sent successfully!");
+        setOtpMode(true);
+      } catch (err) {
+        toast.error(err.response?.data?.message || "Error sending OTP");
+      }
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -53,7 +99,8 @@ const LoginRegisterPage = ({activeSection, setActiveSection}) => {
 
     if (otpMode) {
       if (form.newPassword.length < 5) {
-        return alert("Password must be at least 5 characters long");
+        toast.warn("Password must be at least 5 characters long");
+        return;
       }
       try {
         const res = await API.post("/user/reset-password-otp", {
@@ -61,14 +108,15 @@ const LoginRegisterPage = ({activeSection, setActiveSection}) => {
           otp: form.otp,
           newPassword: form.newPassword,
         });
-        alert(res.data.message);
-        // Reset to login mode
+        toast.success(res.data.message || "Password reset successful!");
         setOtpMode(false);
         setIsForgot(false);
         setIsLogin(true);
         setForm({ name: "", email: "", password: "" });
       } catch (err) {
-        alert(err.response?.data?.message || "Wrong OTP or error resetting");
+        toast.error(
+          err.response?.data?.message || "Wrong OTP or error resetting password"
+        );
       }
       return;
     }
@@ -80,14 +128,15 @@ const LoginRegisterPage = ({activeSection, setActiveSection}) => {
       if (isLogin) {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("user", JSON.stringify(res.data.user));
+        toast.success("Login successful!");
         navigate("/");
       } else {
-        alert("Registration successful! Please login now.");
+        toast.success("Registration successful! Please login now.");
         setIsLogin(true);
       }
     } catch (err) {
       const msg = err.response?.data?.msg || err.response?.data?.message;
-      alert(msg || "Something went wrong");
+      toast.error(msg || "Something went wrong");
     }
   };
 
@@ -176,10 +225,16 @@ const LoginRegisterPage = ({activeSection, setActiveSection}) => {
           </p>
         )}
       </div>
-      <Footer setActiveSection={setActiveSection}/>
-      {activeSection === "privacy" && <PrivacyPolicy setActiveSection={setActiveSection}/>}
-      {activeSection === "terms" && <TermsConditions setActiveSection={setActiveSection}/>}
-      {activeSection === "contact" && <ContactUs setActiveSection={setActiveSection}/>}
+      <Footer setActiveSection={setActiveSection} />
+      {activeSection === "privacy" && (
+        <PrivacyPolicy setActiveSection={setActiveSection} />
+      )}
+      {activeSection === "terms" && (
+        <TermsConditions setActiveSection={setActiveSection} />
+      )}
+      {activeSection === "contact" && (
+        <ContactUs setActiveSection={setActiveSection} />
+      )}
     </div>
   );
 };
