@@ -13,6 +13,7 @@ const ProfilePage = () => {
   const [showLikedUsers, setShowLikedUsers] = useState(false);
   const [likedUsersList, setLikedUsersList] = useState([]);
   const [myLikedIds, setMyLikedIds] = useState([]);
+  const [isValidProfession, setIsValidProfession] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [form, setForm] = useState({});
   const [newSection, setNewSection] = useState({
@@ -76,11 +77,11 @@ const ProfilePage = () => {
     fetchAll();
   }, [id, token]);
 
-  // Profession suggestions
   const handleProfessionInput = async (e) => {
     const value = e.target.value;
     setForm({ ...form, profession: value });
-
+    setIsValidProfession(false); // reset validity when user types
+  
     if (value.trim().length > 1) {
       try {
         const res = await API.post("/user/suggest", { query: value });
@@ -91,12 +92,14 @@ const ProfilePage = () => {
     } else {
       setSuggestions([]);
     }
-  };
+  };  
 
   const handleSelectProfession = (profession) => {
     setForm({ ...form, profession });
     setSuggestions([]);
+    setIsValidProfession(true);
   };
+  
 
   const handleEditChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -132,6 +135,11 @@ const ProfilePage = () => {
       if (form.removeProfilePic) {
         fd.append("removeProfilePic", "true");
       }
+
+      if (!isValidProfession) {
+        alert("⚠️ Please select a valid profession from suggestions.");
+        return;
+      }      
 
       const res = await API.put(`/user/update/${user._id}`, fd, {
         headers: {
@@ -296,9 +304,7 @@ const ProfilePage = () => {
         <div className="profile-info">
           <div className="profile-main-row">
             <p className="name">{user.name}</p>
-            <p className="likes">
-              {user.likes || 0} Likes
-            </p>
+            <p className="likes">{user.likes || 0} Likes</p>
           </div>
 
           <div className="profession-bio">
@@ -447,11 +453,13 @@ const ProfilePage = () => {
             />
             {suggestions.length > 0 && (
               <ul className="suggestions">
-                {suggestions.map((s, i) => (
-                  <li key={i} onClick={() => handleSelectProfession(s)}>
-                    {s}
-                  </li>
-                ))}
+                {suggestions
+                  .filter((s) => s.type === "profession") 
+                  .map((s, i) => (
+                    <li key={i} onClick={() => handleSelectProfession(s.value)}>
+                      {s.value}
+                    </li>
+                  ))}
               </ul>
             )}
           </div>

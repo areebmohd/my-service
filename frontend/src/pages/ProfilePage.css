@@ -230,14 +230,17 @@
 
 .suggestions {
   position: absolute;
-  background: black;
-  border: 1px solid #ccc;
-  width: 100%;
+  background-color: rgb(4, 15, 45);
+  border-radius: 10px;
+  border: 1px solid #1e90ff;
+  width: 30%;
   list-style: none;
   max-height: 150px;
-  overflow-y: auto;
+  overflow-y: scroll;
+  scrollbar-width: none;
   margin: 0;
-  padding: 0;
+  padding-top: 10px;
+  padding-bottom: 10px;
   z-index: 10;
 }
 
@@ -247,7 +250,8 @@
 }
 
 .suggestions li:hover {
-  background: #f0f0f0;
+  background-color: rgb(6, 22, 66);
+  color: white;
 }
 
 .profession-tags {
@@ -294,7 +298,7 @@
 
 .section-header .title {
   color: white;
-  font-size: 80px;
+  font-size: 70px;
   font-weight: 600;
 }
 
@@ -341,7 +345,7 @@
 
 .section .desc {
   color: white;
-  font-size: 25px;
+  font-size: 20px;
 }
 
 .media {

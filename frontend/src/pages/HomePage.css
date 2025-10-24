@@ -51,6 +51,7 @@
 .main-heading {
   font-size: 2.5rem;
   margin-bottom: 15px;
+  color: #1e90ff;
 }
 
 .description {
@@ -79,7 +80,7 @@
 }
 
 .search-bar::placeholder {
-  color: #5c85d6;
+  color: #63a4ff;
 }
 
 .suggestion-box {
