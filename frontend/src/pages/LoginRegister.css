@@ -34,7 +34,7 @@
   margin-bottom: 15px;
   border-radius: 8px;
   border: 1px solid #1e90ff;
-  background-color: #0d0d0d;
+  background-color: transparent;
   color: #63a4ff;
   font-size: 15px;
   outline: none;
@@ -76,4 +76,28 @@
   color: #1e90ff;
   cursor: pointer;
   transition: color 0.3s ease;
+}
+
+@media (max-width: 600px) {
+  .auth-card {
+    padding: 30px 25px;
+    max-width: 90%;
+    gap: 15px;
+  }
+
+  .site-title {
+    font-size: 1.5rem;
+  }
+
+  .auth-card input,
+  .submit-btn {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 601px) and (max-width: 1024px) {
+  .auth-card {
+    padding: 40px 50px;
+    max-width: 400px;
+  }
 }

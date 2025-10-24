@@ -24,7 +24,6 @@ const HomePage = ({ activeSection, setActiveSection }) => {
         try {
           const res = await API.get(`/user/${parsed.id}`);
           setUserInfo(res.data || {});
-          console.log(res.data);
         } catch (error) {
           console.error(error);
         }

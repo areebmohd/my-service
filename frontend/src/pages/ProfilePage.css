@@ -254,29 +254,6 @@
   color: white;
 }
 
-.profession-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-
-.tag {
-  background: #e0e7ff;
-  color: #1e3a8a;
-  padding: 4px 8px;
-  border-radius: 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.tag button {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: #555;
-}
-
 .custom-sections {
   margin-top: 50px;
   display: flex;
@@ -433,4 +410,105 @@
 
 .liked-user-profession {
   font-size: 14px;
+}
+
+@media (max-width: 600px) {
+  .profile-page {
+    padding: 20px;
+  }
+
+  .nav{
+    padding-bottom: 15px;
+  }
+
+  .nav p {
+    font-size: 1.8rem;
+  }
+
+  .nav button {
+    padding: 5px 13px;
+    font-size: 14px;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .profile-picture {
+    width: 150px;
+    height: 150px;
+  }
+
+  .profile-main-row .name {
+    font-size: 1.8rem;
+  }
+
+  .location-box,
+  .city-box,
+  .country-box,
+  .time-box,
+  .fee-box {
+    width: 25vw;
+  }
+
+  .owner-buttons {
+    margin-top: 5px;
+    gap: 10px;
+  }
+
+  .like-btn {
+    margin-top: 5px;
+  }
+
+  .custom-sections {
+    margin-top: 30px;
+  }
+
+  .section-header .title {
+    font-size: 1.8rem;
+  }
+
+  .media img,
+  .media video {
+    height: 200px;
+    border-radius: 12px;
+  }
+
+  .liked-users-modal {
+    width: 90%;
+  }
+}
+
+@media (min-width: 601px) and (max-width: 1024px) {
+  .profile-header {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .profile-picture {
+    width: 200px;
+    height: 200px;
+  }
+
+  .profile-main-row .name {
+    font-size: 2.2rem;
+  }
+
+  .address,
+  .time-fee {
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .section-header .title {
+    font-size: 2.2rem;
+  }
+
+  .media img,
+  .media video {
+    height: 300px;
+  }
 }

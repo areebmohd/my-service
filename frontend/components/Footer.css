@@ -48,3 +48,28 @@
   cursor: pointer;
   font-size: large;
 }
+
+@media (max-width: 600px) {
+  .footer {
+    padding: 20px 10px;
+  }
+
+  .main {
+    width: 90%;
+    font-size: 1rem;
+    padding: 20px;
+  }
+
+  .options {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+}
+
+@media (min-width: 601px) and (max-width: 1024px) {
+  .main {
+    width: 80%;
+    font-size: 1rem;
+  }
+}

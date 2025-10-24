@@ -116,3 +116,54 @@
   align-items: center;
   gap: 10px;
 }
+
+@media (max-width: 600px) {
+  .logo {
+    font-size: 30px;
+  }
+
+  .navbar img {
+    height: 40px;
+    width: 40px;
+  }
+  
+  .logout-btn {
+    padding: 5px 13px;
+    font-size: 14px;
+  }
+
+  .navbar {
+    padding: 10px;
+  }
+
+  .main-heading {
+    font-size: 1.8rem;
+  }
+
+  .description {
+    font-size: 1rem;
+    padding: 0 10px;
+  }
+
+  .search-bar {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 601px) and (max-width: 1024px) {
+  .logo {
+    font-size: 70px;
+  }
+
+  .navbar {
+    padding: 15px 25px;
+  }
+
+  .main-heading {
+    font-size: 2rem;
+  }
+
+  .description {
+    font-size: 1.05rem;
+  }
+}
