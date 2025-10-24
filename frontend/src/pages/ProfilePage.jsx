@@ -336,7 +336,7 @@ const ProfilePage = () => {
         <img
           src={
             user.profilePic ||
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIf4R5qPKHPNMyAqV-FjS_OTBB8pfUV29Phg&s"
+            "https://static.vecteezy.com/system/resources/previews/005/005/788/non_2x/user-icon-in-trendy-flat-style-isolated-on-grey-background-user-symbol-for-your-web-site-design-logo-app-ui-illustration-eps10-free-vector.jpg"
           }
           alt="Profile"
           className="profile-picture"
@@ -780,7 +780,7 @@ const ProfilePage = () => {
                   style={{ cursor: "pointer" }}
                 >
                   <img
-                    src={u.profilePic || "https://via.placeholder.com/40"}
+                    src={u.profilePic || "https://static.vecteezy.com/system/resources/previews/005/005/788/non_2x/user-icon-in-trendy-flat-style-isolated-on-grey-background-user-symbol-for-your-web-site-design-logo-app-ui-illustration-eps10-free-vector.jpg"}
                     alt={u.name}
                     className="liked-user-pic"
                   />

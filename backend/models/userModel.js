@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema(
     likedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   {
-    timestamps: true, // 👈 This line adds createdAt and updatedAt automatically
+    timestamps: true,
   }
 );
 

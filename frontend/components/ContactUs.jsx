@@ -1,12 +1,12 @@
 import React from "react";
 import "./Footer.css";
 
-const ContactUs = ({setActiveSection}) => {
+const ContactUs = ({ setActiveSection }) => {
   return (
     <div className="main">
       <div className="main-top">
         <h2>Contact Us</h2>
-        <p onClick={()=>setActiveSection(null)} className="close-btn">
+        <p onClick={() => setActiveSection(null)} className="close-btn">
           ✖
         </p>
       </div>
@@ -18,15 +18,15 @@ const ContactUs = ({setActiveSection}) => {
       </p>
       <p>You can contact us for any of the following:</p>
       <p>
-        Website Feedback: If you have any thoughts, opinions, or comments
-        about our website, its design, or functionality, we would love to hear
-        them. Your feedback helps us create a better user experience.
+        Website Feedback: If you have any thoughts, opinions, or comments about
+        our website, its design, or functionality, we would love to hear them.
+        Your feedback helps us create a better user experience.
       </p>
       <p>
-        Corrections or Updates: If you come across any information in our
-        posts that seems incorrect, outdated, or missing, let us know. We strive
-        to provide accurate, up-to-date content, and your insights help us
-        ensure we’re delivering the best.
+        Corrections or Updates: If you come across any information in our posts
+        that seems incorrect, outdated, or missing, let us know. We strive to
+        provide accurate, up-to-date content, and your insights help us ensure
+        we’re delivering the best.
       </p>
       <p>
         Technical Issues: If you encounter any errors, bugs, or issues while

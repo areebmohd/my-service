@@ -290,7 +290,7 @@
   gap: 10px;
 }
 
-.section-header{
+.section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -363,7 +363,7 @@
   object-fit: cover;
 }
 
-.liked-users-modal{
+.liked-users-modal {
   position: absolute;
   top: 300px;
   left: 50%;
@@ -375,26 +375,26 @@
   padding-bottom: 20px;
 }
 
-.modal-content{
+.modal-content {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.like-head{
+.like-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0px 20px;
 }
 
-.like-head p{
+.like-head p {
   color: white;
   font-size: 20px;
   font-weight: 500;
 }
 
-.like-head button{
+.like-head button {
   background-color: transparent;
   color: white;
   border: none;
@@ -410,7 +410,7 @@
   padding: 8px 20px;
 }
 
-.liked-user-row:hover{
+.liked-user-row:hover {
   background-color: rgb(6, 22, 66);
 }
 

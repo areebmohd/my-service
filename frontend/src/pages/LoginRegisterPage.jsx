@@ -47,7 +47,7 @@ const LoginRegisterPage = ({ activeSection, setActiveSection }) => {
                 padding: "5px 10px",
                 borderRadius: "5px",
                 color: "white",
-                outline:"none",
+                outline: "none",
                 cursor: "pointer",
               }}
               onClick={() => {
@@ -64,7 +64,7 @@ const LoginRegisterPage = ({ activeSection, setActiveSection }) => {
                 padding: "5px 10px",
                 borderRadius: "5px",
                 color: "white",
-                outline:"none",
+                outline: "none",
                 cursor: "pointer",
               }}
               onClick={() => toast.dismiss(toastId)}
@@ -85,7 +85,9 @@ const LoginRegisterPage = ({ activeSection, setActiveSection }) => {
     }
     confirmToast("Do you want to reset your password?", async () => {
       try {
-        const res = await API.post("/user/send-reset-otp", { email: form.email });
+        const res = await API.post("/user/send-reset-otp", {
+          email: form.email,
+        });
         toast.success(res.data.message || "OTP sent successfully!");
         setOtpMode(true);
       } catch (err) {

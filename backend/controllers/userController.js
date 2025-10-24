@@ -7,7 +7,6 @@ import fs from "fs";
 import crypto from "crypto";
 import sendEmail from "../utils/sendEmail.js";
 
-// Register
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -15,8 +14,6 @@ export const registerUser = async (req, res) => {
     if (!name || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
-
-    // 🚨 Check password length
     if (password.length < 5) {
       return res
         .status(400)
@@ -46,8 +43,6 @@ export const registerUser = async (req, res) => {
   }
 };
 
-
-// Login
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -61,13 +56,15 @@ export const loginUser = async (req, res) => {
       expiresIn: "7d",
     });
 
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email } });
+    res.json({
+      token,
+      user: { id: user._id, name: user.name, email: user.email },
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// ✅ Step 1: Send OTP to email
 export const sendResetOtp = async (req, res) => {
   try {
     const { email } = req.body;
@@ -77,17 +74,14 @@ export const sendResetOtp = async (req, res) => {
     if (!user)
       return res.status(404).json({ message: "No user found with this email" });
 
-    // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Hash OTP before saving
     const hashedOtp = crypto.createHash("sha256").update(otp).digest("hex");
 
     user.resetPasswordOTP = hashedOtp;
-    user.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 mins expiry
+    user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
     await user.save({ validateBeforeSave: false });
 
-    // Send OTP email
     const message = `
       <p>Your OTP for password reset is:</p>
       <h2>${otp}</h2>
@@ -106,7 +100,6 @@ export const sendResetOtp = async (req, res) => {
   }
 };
 
-// ✅ Step 2: Verify OTP and reset password
 export const resetPasswordWithOtp = async (req, res) => {
   try {
     const { email, otp, newPassword } = req.body;
@@ -141,19 +134,16 @@ export const resetPasswordWithOtp = async (req, res) => {
   }
 };
 
-
 export const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // 🔒 Authorization check
     if (req.user.id !== id) {
       return res
         .status(403)
         .json({ message: "Not authorized to edit this profile" });
     }
 
-    // 🧾 Extract text fields
     const {
       name,
       profession,
@@ -177,30 +167,21 @@ export const updateUser = async (req, res) => {
       ...(fee !== undefined && { fee }),
       ...(contact && { contact }),
     };
-
-    // 🔍 Find existing user
     const user = await User.findById(id);
     if (!user) return res.status(404).json({ message: "User not found" });
-
-    // ⚠️ Check if the name is already taken by another user
     if (name) {
       const existingUser = await User.findOne({ name });
       if (existingUser && existingUser._id.toString() !== id) {
         return res.status(400).json({ message: "Name already taken" });
       }
     }
-
-    // 🧹 Helper to get local path from stored URL or path
     const getLocalPathFromUrl = (fileUrl) => {
       if (!fileUrl) return null;
       try {
         const parsed = new URL(fileUrl);
         const idx = parsed.pathname.indexOf("/uploads/");
         if (idx !== -1)
-          return path.join(
-            path.resolve(),
-            parsed.pathname.slice(idx + 1)
-          );
+          return path.join(path.resolve(), parsed.pathname.slice(idx + 1));
       } catch (err) {
         const idx2 = fileUrl.indexOf("/uploads/");
         if (idx2 !== -1)
@@ -209,7 +190,6 @@ export const updateUser = async (req, res) => {
       return null;
     };
 
-    // 🧾 Handle removeProfilePic flag
     const removeFlag =
       req.body &&
       (req.body.removeProfilePic === "true" ||
@@ -230,7 +210,6 @@ export const updateUser = async (req, res) => {
       updateData.profilePic = "";
     }
 
-    // 📸 If new profile picture uploaded
     if (req.file) {
       if (user.profilePic) {
         const oldPath = getLocalPathFromUrl(user.profilePic);
@@ -245,12 +224,11 @@ export const updateUser = async (req, res) => {
           });
         }
       }
-      updateData.profilePic = `${req.protocol}://${req.get(
-        "host"
-      )}/uploads/${req.file.filename}`;
+      updateData.profilePic = `${req.protocol}://${req.get("host")}/uploads/${
+        req.file.filename
+      }`;
     }
 
-    // ✅ Update user
     const updated = await User.findByIdAndUpdate(id, updateData, {
       new: true,
     }).select("-password");
@@ -264,7 +242,6 @@ export const updateUser = async (req, res) => {
   }
 };
 
-// --- Multer setup exported for route usage (kept simple) ---
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "uploads/");
@@ -275,7 +252,14 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "video/mp4", "video/mkv", "video/quicktime"];
+  const allowedTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/jpg",
+    "video/mp4",
+    "video/mkv",
+    "video/quicktime",
+  ];
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
@@ -285,18 +269,14 @@ const fileFilter = (req, file, cb) => {
 
 export const upload = multer({ storage, fileFilter });
 
-// Upload Content Controller (expects upload.array('files') in route)
 export const uploadContent = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // parse title/description from body
     const { title, description } = req.body;
 
-    // req.files should be an array
     const files = req.files || [];
 
-    // convert stored files to full public URLs
     const images = files
       .filter((f) => f.mimetype.startsWith("image"))
       .map((f) => `${req.protocol}://${req.get("host")}/uploads/${f.filename}`);
@@ -314,7 +294,6 @@ export const uploadContent = async (req, res) => {
 
     await user.save();
 
-    // return updated user object
     res.json({ message: "Content uploaded successfully", user });
   } catch (err) {
     console.error("Upload error:", err);
@@ -322,7 +301,6 @@ export const uploadContent = async (req, res) => {
   }
 };
 
-// Like and getLikedUsers unchanged...
 export const likeUser = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -358,19 +336,18 @@ export const likeUser = async (req, res) => {
   }
 };
 
-// ✅ Example for /user/liked
 export const getLikedUsers = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).populate(
       "likedUsers",
-      "name profilePic profession" // 👈 include profession here
+      "name profilePic profession"
     );
     res.json(user.likedUsers);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Error fetching liked users" });
   }
-};// adjust path if needed
+};
 
 export const deleteSection = async (req, res) => {
   try {
@@ -379,17 +356,12 @@ export const deleteSection = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Find section to delete
-    const section = user.sections.find(
-      (s) => s._id.toString() === sectionId
-    );
+    const section = user.sections.find((s) => s._id.toString() === sectionId);
 
     if (!section) return res.status(404).json({ message: "Section not found" });
 
-    // 🧹 Delete associated files (images + videos)
     const allFiles = [...(section.images || []), ...(section.videos || [])];
     allFiles.forEach((fileUrl) => {
-      // Only delete local files (ignore hosted/CDN URLs)
       if (fileUrl.includes("uploads")) {
         const filePath = path.join(
           path.resolve(),
@@ -400,11 +372,7 @@ export const deleteSection = async (req, res) => {
         });
       }
     });
-
-    // Remove section from DB
-    user.sections = user.sections.filter(
-      (s) => s._id.toString() !== sectionId
-    );
+    user.sections = user.sections.filter((s) => s._id.toString() !== sectionId);
     await user.save();
 
     res.json({ user });
@@ -413,5 +381,3 @@ export const deleteSection = async (req, res) => {
     res.status(500).json({ message: "Failed to delete section" });
   }
 };
-
-

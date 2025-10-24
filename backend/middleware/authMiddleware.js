@@ -15,7 +15,7 @@ export const protect = (req, res, next) => {
     try {
       token = req.headers.authorization.split(" ")[1];
       const decoded = jwt.verify(token, JWT_SECRET);
-      req.user = decoded; // contains { id, email }
+      req.user = decoded;
       next();
     } catch (error) {
       console.error("Token verification failed:", error.message);
@@ -25,4 +25,3 @@ export const protect = (req, res, next) => {
     return res.status(401).json({ message: "No token provided" });
   }
 };
-

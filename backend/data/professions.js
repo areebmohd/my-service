@@ -1,4 +1,3 @@
-// data/professions.js
 const professions = [
     "Accountant","Actor","Actuary","Administrative Assistant","Advertising Manager","Aerospace Engineer",
     "Agricultural Engineer","Air Traffic Controller","Animator","Anesthesiologist","Animal Trainer","App Developer",

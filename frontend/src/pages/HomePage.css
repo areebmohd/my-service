@@ -28,7 +28,7 @@
   color: white;
 }
 
-.logout-btn{
+.logout-btn {
   background-color: white;
   color: black;
   padding: 10px 20px;
@@ -37,7 +37,7 @@
   cursor: pointer;
 }
 
-.logout-btn:hover{
+.logout-btn:hover {
   background-color: red;
   color: white;
 }
@@ -111,10 +111,8 @@
   color: white;
 }
 
-.suggestion{
+.suggestion {
   display: flex;
   align-items: center;
   gap: 10px;
 }
-
-

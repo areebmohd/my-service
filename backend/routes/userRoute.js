@@ -9,7 +9,7 @@ import {
   sendResetOtp,
   resetPasswordWithOtp,
   deleteSection,
-  upload, // multer instance exported from controller
+  upload,
 } from "../controllers/userController.js";
 import User from "../models/userModel.js";
 import professions from "../data/professions.js";
@@ -17,31 +17,19 @@ import { protect } from "../middleware/authMiddleware.js";
 import fs from "fs";
 
 const router = express.Router();
-
-// ensure uploads folder exists (once)
 const uploadDir = "uploads";
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.put("/update/:id", protect, upload.single("profilePic"), updateUser);
-
-// upload content: expect multipart form with field name 'files' (multiple)
-router.post(
-  "/upload/:id",
-  protect,
-  upload.array("files", 10), // front sends files under 'files'
-  uploadContent
-);
-
+router.post("/upload/:id", protect, upload.array("files", 10), uploadContent);
 router.put("/like/:id", protect, likeUser);
 router.get("/liked", protect, getLikedUsers);
 router.delete("/section/:userId/:sectionId", deleteSection);
-
 router.post("/send-reset-otp", sendResetOtp);
 router.post("/reset-password-otp", resetPasswordWithOtp);
 
-// 📍 Suggest route (update this)
 router.post("/suggest", async (req, res) => {
   try {
     const { query } = req.body;
@@ -69,11 +57,10 @@ router.post("/suggest", async (req, res) => {
   }
 });
 
-
 router.get("/search", protect, async (req, res) => {
   try {
     const {
-      profession, // now this can be a name or profession
+      profession,
       minFee,
       maxFee,
       locationFilter,
@@ -82,19 +69,24 @@ router.get("/search", protect, async (req, res) => {
     } = req.query;
 
     const currentUserId = req.user.id;
-    const currentUser = await User.findById(currentUserId).select("city country");
+    const currentUser = await User.findById(currentUserId).select(
+      "city country"
+    );
 
     const filters = {};
 
-    if (profession && typeof profession === "string" && profession !== "[object Object]") {
+    if (
+      profession &&
+      typeof profession === "string" &&
+      profession !== "[object Object]"
+    ) {
       filters.$or = [
         { profession: { $regex: profession, $options: "i" } },
         { name: { $regex: profession, $options: "i" } },
       ];
     } else {
-      // No valid search term — return empty result instead of all users
       return res.json({ users: [] });
-    }    
+    }
 
     if (minFee && maxFee)
       filters.fee = { $gte: Number(minFee), $lte: Number(maxFee) };
