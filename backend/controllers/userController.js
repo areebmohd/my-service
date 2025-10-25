@@ -224,7 +224,7 @@ export const updateUser = async (req, res) => {
           });
         }
       }
-      updateData.profilePic = `${req.protocol}://${req.get("host")}/uploads/${
+      updateData.profilePic = `https://my-service-backend.onrender.com/uploads/${
         req.file.filename
       }`;
     }
@@ -279,11 +279,11 @@ export const uploadContent = async (req, res) => {
 
     const images = files
       .filter((f) => f.mimetype.startsWith("image"))
-      .map((f) => `${req.protocol}://${req.get("host")}/uploads/${f.filename}`);
+      .map((f) => `https://my-service-backend.onrender.com/uploads/${f.filename}`);
 
     const videos = files
       .filter((f) => f.mimetype.startsWith("video"))
-      .map((f) => `${req.protocol}://${req.get("host")}/uploads/${f.filename}`);
+      .map((f) => `https://my-service-backend.onrender.com/uploads/${f.filename}`);
 
     const user = await User.findById(id);
     if (!user) return res.status(404).json({ message: "User not found" });
