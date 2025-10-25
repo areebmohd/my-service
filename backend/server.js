@@ -10,16 +10,8 @@ connectDB();
 
 const app = express();
 
-
-app.set('trust proxy', 1);
 app.use(express.json());
-app.use(cors({
-  origin: [
-    'http://localhost:5173', // Vite dev server
-    'https://my-service-frontend.onrender.com' // Your deployed frontend
-  ],
-  credentials: true
-}));
+app.use(cors());
 
 const __dirname = path.resolve();
 
