@@ -168,7 +168,7 @@ const LoginRegisterPage = ({ activeSection, setActiveSection }) => {
               name="name"
               value={form.name}
               onChange={handleChange}
-              placeholder="Full Name"
+              placeholder="Username"
               required
             />
           )}
