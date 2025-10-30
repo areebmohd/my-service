@@ -139,9 +139,7 @@ export const updateUser = async (req, res) => {
     const { id } = req.params;
 
     if (req.user.id !== id) {
-      return res
-        .status(403)
-        .json({ message: "Not authorized to edit this profile" });
+      return res.status(403).json({ message: "Not authorized to edit this profile" });
     }
 
     const {
@@ -169,8 +167,14 @@ export const updateUser = async (req, res) => {
       ...(contact && { contact }),
     };
 
-    const user = await User.findById(id);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (removeProfilePic === "true" || removeProfilePic === true) {
+      updateData.profilePic = "";
+    }
+
+    if (req.file) {
+      console.log("Cloudinary uploaded file:", req.file);
+      updateData.profilePic = req.file.path; 
+    }
 
     if (name) {
       const existingUser = await User.findOne({ name });
@@ -179,26 +183,24 @@ export const updateUser = async (req, res) => {
       }
     }
 
-    if (removeProfilePic === "true" || removeProfilePic === true) {
-      updateData.profilePic = "";
-    }
-
-    if (req.file && req.file.path) {
-      updateData.profilePic = req.file.path;
-    }
-
     const updated = await User.findByIdAndUpdate(id, updateData, {
       new: true,
     }).select("-password");
 
-    return res.json({ message: "Profile updated", user: updated });
+    if (!updated) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.json({ message: "Profile updated successfully", user: updated });
   } catch (error) {
-    console.error("Error updating profile:", error);
-    return res
-      .status(500)
-      .json({ message: "Error updating profile", error: error.message });
+    console.error("Error updating profile:", error.message, error.stack);
+    return res.status(500).json({
+      message: "Error updating profile",
+      error: error.message,
+    });
   }
 };
+
 
 export const uploadContent = async (req, res) => {
   try {
