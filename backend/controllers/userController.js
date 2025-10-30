@@ -1,7 +1,6 @@
 import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import multer from "multer";
 import path from "path";
 import fs from "fs";
 import crypto from "crypto";
@@ -155,6 +154,7 @@ export const updateUser = async (req, res) => {
       timing,
       fee,
       contact,
+      removeProfilePic,
     } = req.body;
 
     const updateData = {
@@ -168,46 +168,18 @@ export const updateUser = async (req, res) => {
       ...(fee !== undefined && { fee }),
       ...(contact && { contact }),
     };
+
     const user = await User.findById(id);
     if (!user) return res.status(404).json({ message: "User not found" });
+
     if (name) {
       const existingUser = await User.findOne({ name });
       if (existingUser && existingUser._id.toString() !== id) {
         return res.status(400).json({ message: "Name already taken" });
       }
     }
-    const getLocalPathFromUrl = (fileUrl) => {
-      if (!fileUrl) return null;
-      try {
-        const parsed = new URL(fileUrl);
-        const idx = parsed.pathname.indexOf("/uploads/");
-        if (idx !== -1)
-          return path.join(path.resolve(), parsed.pathname.slice(idx + 1));
-      } catch (err) {
-        const idx2 = fileUrl.indexOf("/uploads/");
-        if (idx2 !== -1)
-          return path.join(path.resolve(), fileUrl.slice(idx2 + 1));
-      }
-      return null;
-    };
 
-    const removeFlag =
-      req.body &&
-      (req.body.removeProfilePic === "true" ||
-        req.body.removeProfilePic === true);
-
-    if (removeFlag && user.profilePic) {
-      const localPath = getLocalPathFromUrl(user.profilePic);
-      if (localPath) {
-        fs.unlink(localPath, (err) => {
-          if (err)
-            console.warn(
-              "Failed to delete old profile pic:",
-              localPath,
-              err.message
-            );
-        });
-      }
+    if (removeProfilePic === "true" || removeProfilePic === true) {
       updateData.profilePic = "";
     }
 
