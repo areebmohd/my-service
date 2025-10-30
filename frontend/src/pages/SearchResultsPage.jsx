@@ -201,6 +201,7 @@ const SearchResultsPage = () => {
                 }
                 alt={user.name}
                 className="profile-pic"
+                loading="lazy"
               />
               <div className="details">
                 <p className="username">{user.name}</p>

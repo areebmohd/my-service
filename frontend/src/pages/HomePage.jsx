@@ -77,6 +77,7 @@ const HomePage = ({ activeSection, setActiveSection }) => {
           }
           alt="profile"
           onClick={goToProfile}
+          loading="lazy"
         />
         <div className="logo">MyService</div>
         <button className="logout-btn" onClick={handleLogout}>

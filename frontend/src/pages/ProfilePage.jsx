@@ -340,6 +340,7 @@ const ProfilePage = () => {
           }
           alt="Profile"
           className="profile-picture"
+          loading="lazy"
         />
         <div className="profile-info">
           <div className="profile-main-row">
@@ -458,6 +459,7 @@ const ProfilePage = () => {
                   src={user.profilePic}
                   alt="Current"
                   style={{ width: "100px", borderRadius: "10px" }}
+                  loading="lazy"
                 />
                 <button
                   type="button"
@@ -609,6 +611,7 @@ const ProfilePage = () => {
                       borderRadius: "10px",
                       objectFit: "cover",
                     }}
+                    loading="lazy"
                   />
                   <button
                     type="button"
@@ -743,7 +746,7 @@ const ProfilePage = () => {
 
               <div className="media">
                 {sec.images?.map((img, idx) => (
-                  <img key={idx} src={img} alt="user content" />
+                  <img key={idx} src={img} alt="user content" loading="lazy"/>
                 ))}
                 {sec.videos?.map((vid, idx) => (
                   <video key={idx} src={vid} controls />
@@ -783,6 +786,7 @@ const ProfilePage = () => {
                     src={u.profilePic || "https://static.vecteezy.com/system/resources/previews/005/005/788/non_2x/user-icon-in-trendy-flat-style-isolated-on-grey-background-user-symbol-for-your-web-site-design-logo-app-ui-illustration-eps10-free-vector.jpg"}
                     alt={u.name}
                     className="liked-user-pic"
+                    loading="lazy"
                   />
                   <div className="liked-user-info">
                     <span className="liked-user-name">{u.name}</span>
