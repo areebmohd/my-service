@@ -10,6 +10,7 @@ const SearchResultsPage = () => {
   const [locationFilter, setLocationFilter] = useState("");
   const [likesSort, setLikesSort] = useState("");
   const [accountAgeSort, setAccountAgeSort] = useState("");
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   const query = new URLSearchParams(useLocation().search);
@@ -53,6 +54,7 @@ const SearchResultsPage = () => {
 
   useEffect(() => {
     const fetchResults = async () => {
+      setLoading(true);
       try {
         let minFee = "";
         let maxFee = "";
@@ -75,13 +77,13 @@ const SearchResultsPage = () => {
         setUsers(res.data.users || []);
       } catch (err) {
         console.error("Search failed:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchResults();
   }, [profession, feeFilter, locationFilter, likesSort, accountAgeSort]);
-
-  if (!users) return <p className="loading">Loading...</p>;
 
   return (
     <div className="search-results-page">
@@ -189,7 +191,9 @@ const SearchResultsPage = () => {
       </div>
 
       <div className="results-grid">
-        {users.length > 0 ? (
+        {loading ? (
+          <p>Loading...</p>
+        ) : users.length > 0 ? (
           users.map((user) => (
             <div
               className="user-card"

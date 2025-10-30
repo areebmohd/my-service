@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import LoginRegisterPage from "./pages/LoginRegisterPage";
 import SearchResultsPage from "./pages/SearchResultsPage";
@@ -15,7 +15,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={token ? <HomePage activeSection={activeSection} setActiveSection={setActiveSection}/> : <Navigate to="/login" />} />
+        <Route path="/" element={<HomePage activeSection={activeSection} setActiveSection={setActiveSection}/>} />
         <Route path="/login" element={<LoginRegisterPage activeSection={activeSection} setActiveSection={setActiveSection}/>} />
         <Route path="/search" element={<SearchResultsPage />} />
         <Route path="/profile/:id" element={<ProfilePage />} />
