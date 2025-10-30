@@ -98,7 +98,7 @@ const LoginRegisterPage = ({ activeSection, setActiveSection }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (otpMode) {
       if (form.newPassword.length < 5) {
         toast.warn("Password must be at least 5 characters long");
@@ -128,11 +128,10 @@ const LoginRegisterPage = ({ activeSection, setActiveSection }) => {
           email: form.email,
           password: form.password,
         });
-  
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("user", JSON.stringify(res.data.user));
-        toast.success("Login successful!");
         navigate("/");
+        toast.success("Login successful!");
       } else {
         const res = await API.post("/user/register", {
           name: form.name,
@@ -147,7 +146,6 @@ const LoginRegisterPage = ({ activeSection, setActiveSection }) => {
       toast.error(msg || "Something went wrong");
     }
   };
-  
 
   return (
     <div className="login-page">

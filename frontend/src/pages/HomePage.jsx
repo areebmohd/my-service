@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import API from "../api/api";
 import "./HomePage.css";
 import Footer from "../../components/Footer";
@@ -19,11 +19,11 @@ const HomePage = ({ activeSection, setActiveSection }) => {
     if (userData) {
       const parsed = JSON.parse(userData);
       setUser(parsed);
-
       const fetchInfo = async () => {
         try {
           const res = await API.get(`/user/${parsed.id}`);
           setUserInfo(res.data || {});
+          console.log(res.data);
         } catch (error) {
           console.error(error);
         }
