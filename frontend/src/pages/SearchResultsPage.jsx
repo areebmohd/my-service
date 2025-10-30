@@ -81,6 +81,8 @@ const SearchResultsPage = () => {
     fetchResults();
   }, [profession, feeFilter, locationFilter, likesSort, accountAgeSort]);
 
+  if (!users) return <p className="loading">Loading...</p>;
+
   return (
     <div className="search-results-page">
       <header className="results-header">

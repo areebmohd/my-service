@@ -321,7 +321,7 @@ const ProfilePage = () => {
     setShowLikedUsers(true);
   };
 
-  if (!user) return <p className="loading">Loading profile...</p>;
+  if (!user) return <p className="loading">Loading...</p>;
 
   return (
     <div className="profile-page">
