@@ -6,6 +6,7 @@ import path from "path";
 import fs from "fs";
 import crypto from "crypto";
 import sendEmail from "../utils/sendEmail.js";
+import professions from "../data/professions.js";
 
 export const registerUser = async (req, res) => {
   try {
@@ -224,9 +225,7 @@ export const updateUser = async (req, res) => {
           });
         }
       }
-      updateData.profilePic = `https://my-service-backend.onrender.com/uploads/${
-        req.file.filename
-      }`;
+      updateData.profilePic = `https://my-service-backend.onrender.com/uploads/${req.file.filename}`;
     }
 
     const updated = await User.findByIdAndUpdate(id, updateData, {
@@ -279,11 +278,15 @@ export const uploadContent = async (req, res) => {
 
     const images = files
       .filter((f) => f.mimetype.startsWith("image"))
-      .map((f) => `https://my-service-backend.onrender.com/uploads/${f.filename}`);
+      .map(
+        (f) => `https://my-service-backend.onrender.com/uploads/${f.filename}`
+      );
 
     const videos = files
       .filter((f) => f.mimetype.startsWith("video"))
-      .map((f) => `https://my-service-backend.onrender.com/uploads/${f.filename}`);
+      .map(
+        (f) => `https://my-service-backend.onrender.com/uploads/${f.filename}`
+      );
 
     const user = await User.findById(id);
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -379,5 +382,99 @@ export const deleteSection = async (req, res) => {
   } catch (err) {
     console.error("Error deleting section:", err);
     res.status(500).json({ message: "Failed to delete section" });
+  }
+};
+
+export const suggest = async (req, res) => {
+  try {
+    const { query } = req.body;
+    if (!query) return res.json({ suggestions: [] });
+
+    const professionSuggestions = professions
+      .filter((p) => p.toLowerCase().includes(query.toLowerCase()))
+      .slice(0, 5)
+      .map((p) => ({ type: "profession", value: p }));
+
+    const users = await User.find({
+      name: { $regex: query, $options: "i" },
+    })
+      .limit(5)
+      .select("name");
+
+    const nameSuggestions = users.map((u) => ({
+      type: "user",
+      value: u.name,
+    }));
+
+    res.json({ suggestions: [...professionSuggestions, ...nameSuggestions] });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch suggestions" });
+  }
+};
+
+export const searchUser = async (req, res) => {
+  try {
+    const {
+      profession,
+      minFee,
+      maxFee,
+      locationFilter,
+      likesSort,
+      accountAgeSort,
+    } = req.query;
+
+    const currentUserId = req.user.id;
+    const currentUser = await User.findById(currentUserId).select(
+      "city country"
+    );
+
+    const filters = {};
+
+    if (
+      profession &&
+      typeof profession === "string" &&
+      profession !== "[object Object]"
+    ) {
+      filters.$or = [
+        { profession: { $regex: profession, $options: "i" } },
+        { name: { $regex: profession, $options: "i" } },
+      ];
+    } else {
+      return res.json({ users: [] });
+    }
+
+    if (minFee && maxFee)
+      filters.fee = { $gte: Number(minFee), $lte: Number(maxFee) };
+
+    if (locationFilter === "same-city" && currentUser?.city) {
+      filters.city = { $regex: new RegExp(`^${currentUser.city}$`, "i") };
+    } else if (locationFilter === "same-country" && currentUser?.country) {
+      filters.country = { $regex: new RegExp(`^${currentUser.country}$`, "i") };
+    } else if (locationFilter === "different-country" && currentUser?.country) {
+      filters.country = {
+        $not: { $regex: new RegExp(`^${currentUser.country}$`, "i") },
+      };
+    }
+
+    let queryDb = User.find(filters).select("-password");
+
+    if (likesSort === "highest") queryDb = queryDb.sort({ likes: -1 });
+    if (accountAgeSort === "new") queryDb = queryDb.sort({ createdAt: -1 });
+    if (accountAgeSort === "old") queryDb = queryDb.sort({ createdAt: 1 });
+
+    const users = await queryDb;
+    res.json({ users });
+  } catch (err) {
+    console.error("Search error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const getUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select("-password");
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };

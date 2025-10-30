@@ -8,7 +8,6 @@ const sendEmail = async ({ to, subject, html }) => {
       pass: process.env.EMAIL_PASS,
     },
   });
-
   await transporter.sendMail({
     from: `"MyService.com" <${process.env.EMAIL_USER}>`,
     to,

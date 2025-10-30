@@ -3,16 +3,17 @@ import {
   registerUser,
   loginUser,
   updateUser,
+  searchUser,
   uploadContent,
+  getUser,
   likeUser,
   getLikedUsers,
   sendResetOtp,
   resetPasswordWithOtp,
   deleteSection,
+  suggest,
   upload,
 } from "../controllers/userController.js";
-import User from "../models/userModel.js";
-import professions from "../data/professions.js";
 import { protect } from "../middleware/authMiddleware.js";
 import fs from "fs";
 
@@ -29,99 +30,8 @@ router.get("/liked", protect, getLikedUsers);
 router.delete("/section/:userId/:sectionId", deleteSection);
 router.post("/send-reset-otp", sendResetOtp);
 router.post("/reset-password-otp", resetPasswordWithOtp);
-
-router.post("/suggest", async (req, res) => {
-  try {
-    const { query } = req.body;
-    if (!query) return res.json({ suggestions: [] });
-
-    const professionSuggestions = professions
-      .filter((p) => p.toLowerCase().includes(query.toLowerCase()))
-      .slice(0, 5)
-      .map((p) => ({ type: "profession", value: p }));
-
-    const users = await User.find({
-      name: { $regex: query, $options: "i" },
-    })
-      .limit(5)
-      .select("name");
-
-    const nameSuggestions = users.map((u) => ({
-      type: "user",
-      value: u.name,
-    }));
-
-    res.json({ suggestions: [...professionSuggestions, ...nameSuggestions] });
-  } catch (err) {
-    res.status(500).json({ error: "Failed to fetch suggestions" });
-  }
-});
-
-router.get("/search", protect, async (req, res) => {
-  try {
-    const {
-      profession,
-      minFee,
-      maxFee,
-      locationFilter,
-      likesSort,
-      accountAgeSort,
-    } = req.query;
-
-    const currentUserId = req.user.id;
-    const currentUser = await User.findById(currentUserId).select(
-      "city country"
-    );
-
-    const filters = {};
-
-    if (
-      profession &&
-      typeof profession === "string" &&
-      profession !== "[object Object]"
-    ) {
-      filters.$or = [
-        { profession: { $regex: profession, $options: "i" } },
-        { name: { $regex: profession, $options: "i" } },
-      ];
-    } else {
-      return res.json({ users: [] });
-    }
-
-    if (minFee && maxFee)
-      filters.fee = { $gte: Number(minFee), $lte: Number(maxFee) };
-
-    if (locationFilter === "same-city" && currentUser?.city) {
-      filters.city = { $regex: new RegExp(`^${currentUser.city}$`, "i") };
-    } else if (locationFilter === "same-country" && currentUser?.country) {
-      filters.country = { $regex: new RegExp(`^${currentUser.country}$`, "i") };
-    } else if (locationFilter === "different-country" && currentUser?.country) {
-      filters.country = {
-        $not: { $regex: new RegExp(`^${currentUser.country}$`, "i") },
-      };
-    }
-
-    let queryDb = User.find(filters).select("-password");
-
-    if (likesSort === "highest") queryDb = queryDb.sort({ likes: -1 });
-    if (accountAgeSort === "new") queryDb = queryDb.sort({ createdAt: -1 });
-    if (accountAgeSort === "old") queryDb = queryDb.sort({ createdAt: 1 });
-
-    const users = await queryDb;
-    res.json({ users });
-  } catch (err) {
-    console.error("Search error:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.get("/:id", async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id).select("-password");
-    res.json(user);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+router.post("/suggest", suggest);
+router.get("/search", protect, searchUser);
+router.get("/:id", getUser);
 
 export default router;
