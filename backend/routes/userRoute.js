@@ -15,11 +15,9 @@ import {
   upload,
 } from "../controllers/userController.js";
 import { protect } from "../middleware/authMiddleware.js";
-import fs from "fs";
+import uploadcld from "../cloudinaryConfig.js";
 
 const router = express.Router();
-const uploadDir = "uploads";
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);
@@ -33,8 +31,15 @@ router.post("/reset-password-otp", resetPasswordWithOtp);
 router.post("/suggest", suggest);
 router.get("/search", protect, searchUser);
 router.get("/:id", getUser);
-app.get("/api/health", (req, res) => {
-  res.status(200).json({ status: "ok" });
+router.post("/upload-image", uploadcld.single("image"), (req, res) => {
+  try {
+    res.status(200).json({
+      success: true,
+      imageUrl: req.file.path,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Upload failed" });
+  }
 });
 
 export default router;
