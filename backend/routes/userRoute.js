@@ -33,5 +33,8 @@ router.post("/reset-password-otp", resetPasswordWithOtp);
 router.post("/suggest", suggest);
 router.get("/search", protect, searchUser);
 router.get("/:id", getUser);
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 export default router;
