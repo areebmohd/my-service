@@ -211,21 +211,8 @@ export const updateUser = async (req, res) => {
       updateData.profilePic = "";
     }
 
-    if (req.file) {
-      if (user.profilePic) {
-        const oldPath = getLocalPathFromUrl(user.profilePic);
-        if (oldPath) {
-          fs.unlink(oldPath, (err) => {
-            if (err)
-              console.warn(
-                "Failed to delete previous profile pic:",
-                oldPath,
-                err.message
-              );
-          });
-        }
-      }
-      updateData.profilePic = `https://my-service-backend.onrender.com/uploads/${req.file.filename}`;
+    if (req.file && req.file.path) {
+      updateData.profilePic = req.file.path;
     }
 
     const updated = await User.findByIdAndUpdate(id, updateData, {
@@ -241,33 +228,6 @@ export const updateUser = async (req, res) => {
   }
 };
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
-});
-
-const fileFilter = (req, file, cb) => {
-  const allowedTypes = [
-    "image/jpeg",
-    "image/png",
-    "image/jpg",
-    "video/mp4",
-    "video/mkv",
-    "video/quicktime",
-  ];
-  if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(new Error("Only images and videos are allowed"), false);
-  }
-};
-
-export const upload = multer({ storage, fileFilter });
-
 export const uploadContent = async (req, res) => {
   try {
     const { id } = req.params;
@@ -278,15 +238,11 @@ export const uploadContent = async (req, res) => {
 
     const images = files
       .filter((f) => f.mimetype.startsWith("image"))
-      .map(
-        (f) => `https://my-service-backend.onrender.com/uploads/${f.filename}`
-      );
+      .map((f) => f.path);
 
     const videos = files
       .filter((f) => f.mimetype.startsWith("video"))
-      .map(
-        (f) => `https://my-service-backend.onrender.com/uploads/${f.filename}`
-      );
+      .map((f) => f.path);
 
     const user = await User.findById(id);
     if (!user) return res.status(404).json({ message: "User not found" });
