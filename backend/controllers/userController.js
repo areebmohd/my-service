@@ -137,6 +137,14 @@ export const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
 
+    if (!id) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
     if (req.user.id !== id) {
       return res.status(403).json({ message: "Not authorized to edit this profile" });
     }
@@ -156,14 +164,14 @@ export const updateUser = async (req, res) => {
 
     const updateData = {
       ...(name && { name }),
-      ...(profession && { profession }),
-      ...(bio && { bio }),
-      ...(location && { location }),
-      ...(city && { city }),
-      ...(country && { country }),
-      ...(timing && { timing }),
+      ...(profession !== undefined && profession !== null && { profession }),
+      ...(bio !== undefined && bio !== null && { bio }),
+      ...(location !== undefined && location !== null && { location }),
+      ...(city !== undefined && city !== null && { city }),
+      ...(country !== undefined && country !== null && { country }),
+      ...(timing !== undefined && timing !== null && { timing }),
       ...(fee !== undefined && { fee }),
-      ...(contact && { contact }),
+      ...(contact !== undefined && contact !== null && { contact }),
     };
 
     if (removeProfilePic === "true" || removeProfilePic === true) {
@@ -184,6 +192,7 @@ export const updateUser = async (req, res) => {
 
     const updated = await User.findByIdAndUpdate(id, updateData, {
       new: true,
+      runValidators: true,
     }).select("-password");
 
     if (!updated) {
@@ -195,7 +204,7 @@ export const updateUser = async (req, res) => {
     console.error("Error updating profile:", error.message, error.stack);
     return res.status(500).json({
       message: "Error updating profile",
-      error: error.message,
+      error: process.env.NODE_ENV === "development" ? error.message : "Internal server error",
     });
   }
 };
@@ -243,18 +252,34 @@ export const getUploadUrl = async (req, res) => {
     if (!filename || !contentType) {
       return res.status(400).json({ message: "filename and contentType are required" });
     }
+    
+    if (!process.env.AWS_S3_BUCKET) {
+      console.error("AWS_S3_BUCKET is not configured");
+      return res.status(500).json({ message: "File upload service is not configured" });
+    }
+    
     const safeName = String(filename).replace(/[^a-zA-Z0-9._-]/g, "_");
     const key = `uploads/${Date.now()}-${Math.random().toString(36).slice(2)}-${safeName}`;
+    
     const url = await createPresignedUpload({
       bucket: process.env.AWS_S3_BUCKET,
       key,
       contentType,
     });
-    const publicUrl = buildPublicUrl({ bucket: process.env.AWS_S3_BUCKET, key });
+    
+    const publicUrl = buildPublicUrl({ 
+      bucket: process.env.AWS_S3_BUCKET, 
+      key,
+      region: process.env.AWS_REGION 
+    });
+    
     res.json({ url, key, publicUrl });
   } catch (err) {
-    console.error("Presign error:", err);
-    res.status(500).json({ message: "Failed to create upload URL" });
+    console.error("Presign error:", err.message, err.stack);
+    res.status(500).json({ 
+      message: "Failed to create upload URL",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined
+    });
   }
 };
 
