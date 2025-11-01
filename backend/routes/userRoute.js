@@ -14,13 +14,15 @@ import {
   suggest,
 } from "../controllers/userController.js";
 import { protect } from "../middleware/authMiddleware.js";
-import { getUploadUrl } from "../controllers/userController.js";
+import { getUploadUrl, uploadFileProxy, getImageProxy } from "../controllers/userController.js";
 
 const router = express.Router();
 
+router.get("/image", getImageProxy);
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.get("/upload-url", protect, getUploadUrl);
+router.post("/upload-file", protect, uploadFileProxy);
 router.put("/update/:id", protect, updateUser);
 router.post("/upload/:id", protect, uploadContent);
 router.put("/like/:id", protect, likeUser);

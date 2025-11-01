@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import sendEmail from "../utils/sendEmail.js";
 import professions from "../data/professions.js";
-import { createPresignedUpload, buildPublicUrl } from "../utils/awsS3.js";
+import { createPresignedUpload, buildPublicUrl, uploadFileToS3, getFileFromS3 } from "../utils/awsS3.js";
 
 export const registerUser = async (req, res) => {
   try {
@@ -218,8 +218,6 @@ export const updateUser = async (req, res) => {
 export const uploadContent = async (req, res) => {
   try {
     const { id } = req.params;
-
-    // Ensure req.body exists before destructuring
     if (!req.body) {
       return res.status(400).json({ message: "Request body is required" });
     }
@@ -235,7 +233,6 @@ export const uploadContent = async (req, res) => {
       if (Array.isArray(bodyVideos)) videos = bodyVideos.filter(Boolean);
       else if (typeof bodyVideos === "string" && bodyVideos) videos = JSON.parse(bodyVideos);
     } catch (e) {
-      // Fallback to empty on bad payload
       images = images || [];
       videos = videos || [];
     }
@@ -268,8 +265,10 @@ export const getUploadUrl = async (req, res) => {
       return res.status(500).json({ message: "File upload service is not configured" });
     }
     
+    const timestamp = Date.now();
+    const randomBytes = crypto.randomBytes(16).toString('hex');
     const safeName = String(filename).replace(/[^a-zA-Z0-9._-]/g, "_");
-    const key = `uploads/${Date.now()}-${Math.random().toString(36).slice(2)}-${safeName}`;
+    const key = `uploads/${timestamp}-${randomBytes}-${safeName}`;
     
     const url = await createPresignedUpload({
       bucket: process.env.AWS_S3_BUCKET,
@@ -290,6 +289,113 @@ export const getUploadUrl = async (req, res) => {
       message: "Failed to create upload URL",
       error: process.env.NODE_ENV === "development" ? err.message : undefined
     });
+  }
+};
+
+export const uploadFileProxy = async (req, res) => {
+  try {
+    const { filename, contentType } = req.query;
+    
+    if (!filename || !contentType) {
+      return res.status(400).json({ message: "filename and contentType are required as query parameters" });
+    }
+    
+    let fileBuffer;
+    if (req.body instanceof Buffer) {
+      fileBuffer = req.body;
+    } else if (req.body && typeof req.body === 'object') {
+      fileBuffer = req.body;
+    } else {
+      return res.status(400).json({ message: "File data is required" });
+    }
+    
+    if (!fileBuffer || (Buffer.isBuffer(fileBuffer) && fileBuffer.length === 0)) {
+      return res.status(400).json({ message: "File data is empty" });
+    }
+    
+    if (!process.env.AWS_S3_BUCKET) {
+      console.error("AWS_S3_BUCKET is not configured");
+      return res.status(500).json({ message: "File upload service is not configured" });
+    }
+    
+    const timestamp = Date.now();
+    const randomBytes = crypto.randomBytes(16).toString('hex');
+    const safeName = String(filename).replace(/[^a-zA-Z0-9._-]/g, "_");
+    const key = `uploads/${timestamp}-${randomBytes}-${safeName}`;
+    
+    const buffer = Buffer.isBuffer(fileBuffer) ? fileBuffer : Buffer.from(fileBuffer);
+    
+    await uploadFileToS3({
+      bucket: process.env.AWS_S3_BUCKET,
+      key,
+      contentType,
+      body: buffer,
+    });
+    
+    const publicUrl = buildPublicUrl({ 
+      bucket: process.env.AWS_S3_BUCKET, 
+      key,
+      region: process.env.AWS_REGION 
+    });
+    
+    res.json({ key, publicUrl });
+  } catch (err) {
+    console.error("File upload proxy error:", err.message, err.stack);
+    res.status(500).json({ 
+      message: "Failed to upload file",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined
+    });
+  }
+};
+
+export const getImageProxy = async (req, res) => {
+  try {
+    const { key } = req.query;
+    
+    console.log('Image proxy requested with key:', key);
+    
+    if (!key) {
+      return res.status(400).json({ message: "Key parameter is required" });
+    }
+    
+    if (!process.env.AWS_S3_BUCKET) {
+      console.error('AWS_S3_BUCKET not configured');
+      return res.status(500).json({ message: "S3 bucket not configured" });
+    }
+    
+    const decodedKey = decodeURIComponent(key);
+    console.log('Decoded key:', decodedKey, 'Bucket:', process.env.AWS_S3_BUCKET);
+    
+    const result = await getFileFromS3({
+      bucket: process.env.AWS_S3_BUCKET,
+      key: decodedKey,
+    });
+    
+    console.log('File retrieved from S3, ContentType:', result.ContentType);
+
+    const contentType = result.ContentType || 'application/octet-stream';
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Cache-Control', 'public, max-age=31536000');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    
+    if (result.Body) {
+      const chunks = [];
+      for await (const chunk of result.Body) {
+        chunks.push(chunk);
+      }
+      const buffer = Buffer.concat(chunks);
+      console.log('Sending file buffer, size:', buffer.length);
+      res.send(buffer);
+    } else {
+      console.error('No body in S3 result');
+      res.status(404).json({ message: "File not found" });
+    }
+  } catch (err) {
+    console.error("Image proxy error:", err.message, err.name, err.code);
+    if (err.name === 'NoSuchKey' || err.name === 'NotFound' || err.code === 'NoSuchKey') {
+      return res.status(404).json({ message: "Image not found", error: err.message });
+    }
+    res.status(500).json({ message: "Failed to retrieve image", error: err.message });
   }
 };
 

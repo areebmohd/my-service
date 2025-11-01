@@ -27,6 +27,36 @@ const ProfilePage = () => {
   const token = localStorage.getItem("token");
   const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
 
+  const getImageUrl = (url) => {
+    if (!url) return null;
+    if (url.includes("s3.amazonaws.com")) {
+      try {
+        const urlObj = new URL(url);
+        const key = urlObj.pathname.startsWith("/")
+          ? urlObj.pathname.slice(1)
+          : urlObj.pathname;
+
+        if (key) {
+          const proxyUrl = `${
+            API.defaults.baseURL
+          }/user/image?key=${encodeURIComponent(key)}`;
+          console.log("Converting S3 URL:", url, "to proxy URL:", proxyUrl);
+          return proxyUrl;
+        }
+      } catch (e) {
+        console.error("Error parsing URL:", url, e);
+        const match = url.match(/s3[^\/]*\/\/[^\/]+\/(.+)$/);
+        if (match) {
+          const proxyUrl = `${
+            API.defaults.baseURL
+          }/user/image?key=${encodeURIComponent(match[1])}`;
+          return proxyUrl;
+        }
+      }
+    }
+    return url;
+  };
+
   useEffect(() => {
     const fetchAll = async () => {
       try {
@@ -171,16 +201,30 @@ const ProfilePage = () => {
 
       if (form.profilePicFile) {
         const file = form.profilePicFile;
-        const presign = await API.get(`/user/upload-url`, {
-          params: { filename: file.name, contentType: file.type },
-          headers: { Authorization: `Bearer ${token}` },
-        }).then((r) => r.data);
-        await fetch(presign.url, {
-          method: "PUT",
-          headers: { "Content-Type": file.type },
-          body: file,
-        });
-        payload.profilePicUrl = presign.publicUrl;
+        const arrayBuffer = await file.arrayBuffer();
+
+        const response = await fetch(
+          `${
+            API.defaults.baseURL
+          }/user/upload-file?filename=${encodeURIComponent(
+            file.name
+          )}&contentType=${encodeURIComponent(file.type)}`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": file.type,
+            },
+            body: arrayBuffer,
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Profile picture upload failed");
+        }
+
+        const data = await response.json();
+        payload.profilePicUrl = data.publicUrl;
       }
 
       if (form.profession === user.profession) {
@@ -189,9 +233,8 @@ const ProfilePage = () => {
         return;
       }
 
-      // Ensure payload is at least an empty object, never undefined
       const safePayload = payload || {};
-      
+
       const res = await API.put(`/user/update/${user._id}`, safePayload);
 
       const updatedUser = res.data?.user || res.data;
@@ -229,31 +272,52 @@ const ProfilePage = () => {
     e.preventDefault();
     try {
       const uploadFile = async (file) => {
-        const { url, publicUrl } = await API.get(`/user/upload-url`, {
-          params: { filename: file.name, contentType: file.type },
-          headers: { Authorization: `Bearer ${token}` },
-        }).then((r) => r.data);
-        await fetch(url, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
-        return publicUrl;
+        const arrayBuffer = await file.arrayBuffer();
+
+        const response = await fetch(
+          `${
+            API.defaults.baseURL
+          }/user/upload-file?filename=${encodeURIComponent(
+            file.name
+          )}&contentType=${encodeURIComponent(file.type)}`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": file.type,
+            },
+            body: arrayBuffer,
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Upload failed");
+        }
+
+        const data = await response.json();
+        return data.publicUrl;
       };
 
-      const imageUrls = await Promise.all((newSection.images || []).map(uploadFile));
-      const videoUrls = await Promise.all((newSection.videos || []).map(uploadFile));
+      const imageUrls = await Promise.all(
+        (newSection.images || []).map(uploadFile)
+      );
+      const videoUrls = await Promise.all(
+        (newSection.videos || []).map(uploadFile)
+      );
 
-      // Ensure all required fields are present
       const contentPayload = {
         title: newSection.title || "",
         description: newSection.description || "",
         images: imageUrls || [],
         videos: videoUrls || [],
       };
-      
+
       const res = await API.post(`/user/upload/${user._id}`, contentPayload);
 
       setUser(res.data.user);
       setContentMode(false);
       setNewSection({ title: "", description: "", images: [], videos: [] });
-      toast.success("🎉 Content added!");
+      toast.success("Content added!");
     } catch (err) {
       console.error(err);
       toast.error("Failed to add content");
@@ -311,7 +375,6 @@ const ProfilePage = () => {
     }
 
     try {
-      // Like endpoint doesn't need a body, but send empty object to ensure req.body exists
       const res = await API.put(`/user/like/${user._id}`, {});
 
       if (res.data && (res.data._id || res.data.likes !== undefined)) {
@@ -345,10 +408,13 @@ const ProfilePage = () => {
 
       <div className="profile-header">
         <img
-          src={
-            user.profilePic ||
-            "https://static.vecteezy.com/system/resources/previews/005/005/788/non_2x/user-icon-in-trendy-flat-style-isolated-on-grey-background-user-symbol-for-your-web-site-design-logo-app-ui-illustration-eps10-free-vector.jpg"
-          }
+          src={(() => {
+            if (!user.profilePic) {
+              return "https://static.vecteezy.com/system/resources/previews/005/005/788/non_2x/user-icon-in-trendy-flat-style-isolated-on-grey-background-user-symbol-for-your-web-site-design-logo-app-ui-illustration-eps10-free-vector.jpg";
+            }
+            const proxyUrl = getImageUrl(user.profilePic);
+            return proxyUrl || user.profilePic;
+          })()}
           alt="Profile"
           className="profile-picture"
           loading="lazy"
@@ -418,10 +484,7 @@ const ProfilePage = () => {
       </div>
 
       {editMode && (
-        <form
-          className="edit-form"
-          onSubmit={handleUpdateProfile}
-        >
+        <form className="edit-form" onSubmit={handleUpdateProfile}>
           <p className="heading">Edit Profile Info</p>
           <div className="pair">
             <input
@@ -599,7 +662,7 @@ const ProfilePage = () => {
               multiple
               onChange={(e) => {
                 const selected = Array.from(e.target.files);
-                const all = [...newSection.images, ...selected].slice(0, 4); // merge + limit 4
+                const all = [...newSection.images, ...selected].slice(0, 4);
                 setNewSection({ ...newSection, images: all });
               }}
             />
@@ -659,7 +722,7 @@ const ProfilePage = () => {
               multiple
               onChange={(e) => {
                 const selected = Array.from(e.target.files);
-                const all = [...newSection.videos, ...selected].slice(0, 4); // merge + limit 4
+                const all = [...newSection.videos, ...selected].slice(0, 4);
                 setNewSection({ ...newSection, videos: all });
               }}
             />
@@ -755,12 +818,44 @@ const ProfilePage = () => {
               <p className="desc">{sec.description}</p>
 
               <div className="media">
-                {sec.images?.map((img, idx) => (
-                  <img key={idx} src={img} alt="user content" loading="lazy"/>
-                ))}
-                {sec.videos?.map((vid, idx) => (
-                  <video key={idx} src={vid} controls />
-                ))}
+                {sec.images?.map((img, idx) => {
+                  const imageUrl = getImageUrl(img) || img;
+                  return (
+                    <img
+                      key={idx}
+                      src={imageUrl}
+                      alt="user content"
+                      loading="lazy"
+                      onError={(e) => {
+                        console.error(
+                          "Image failed to load:",
+                          img,
+                          "Proxy URL:",
+                          imageUrl
+                        );
+                        e.target.style.display = "none";
+                      }}
+                    />
+                  );
+                })}
+                {sec.videos?.map((vid, idx) => {
+                  const videoUrl = getImageUrl(vid) || vid;
+                  return (
+                    <video
+                      key={idx}
+                      src={videoUrl}
+                      controls
+                      onError={(e) => {
+                        console.error(
+                          "Video failed to load:",
+                          vid,
+                          "Proxy URL:",
+                          videoUrl
+                        );
+                      }}
+                    />
+                  );
+                })}
               </div>
             </div>
           ))
@@ -793,7 +888,11 @@ const ProfilePage = () => {
                   style={{ cursor: "pointer" }}
                 >
                   <img
-                    src={u.profilePic || "https://static.vecteezy.com/system/resources/previews/005/005/788/non_2x/user-icon-in-trendy-flat-style-isolated-on-grey-background-user-symbol-for-your-web-site-design-logo-app-ui-illustration-eps10-free-vector.jpg"}
+                    src={
+                      u.profilePic
+                        ? getImageUrl(u.profilePic) || u.profilePic
+                        : "https://static.vecteezy.com/system/resources/previews/005/005/788/non_2x/user-icon-in-trendy-flat-style-isolated-on-grey-background-user-symbol-for-your-web-site-design-logo-app-ui-illustration-eps10-free-vector.jpg"
+                    }
                     alt={u.name}
                     className="liked-user-pic"
                     loading="lazy"
