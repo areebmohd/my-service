@@ -150,9 +150,8 @@ const ProfilePage = () => {
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     try {
-      const fd = new FormData();
-
-      const fields = [
+      const payload = {};
+      [
         "name",
         "profession",
         "bio",
@@ -162,17 +161,26 @@ const ProfilePage = () => {
         "timing",
         "fee",
         "contact",
-      ];
-      fields.forEach((k) => {
-        if (form[k] !== undefined && form[k] !== null) fd.append(k, form[k]);
+      ].forEach((k) => {
+        if (form[k] !== undefined && form[k] !== null) payload[k] = form[k];
       });
 
-      if (form.profilePicFile) {
-        fd.append("profilePic", form.profilePicFile);
+      if (form.removeProfilePic) {
+        payload.removeProfilePic = true;
       }
 
-      if (form.removeProfilePic) {
-        fd.append("removeProfilePic", "true");
+      if (form.profilePicFile) {
+        const file = form.profilePicFile;
+        const presign = await API.get(`/user/upload-url`, {
+          params: { filename: file.name, contentType: file.type },
+          headers: { Authorization: `Bearer ${token}` },
+        }).then((r) => r.data);
+        await fetch(presign.url, {
+          method: "PUT",
+          headers: { "Content-Type": file.type },
+          body: file,
+        });
+        payload.profilePicUrl = presign.publicUrl;
       }
 
       if (form.profession === user.profession) {
@@ -181,11 +189,8 @@ const ProfilePage = () => {
         return;
       }
 
-      const res = await API.put(`/user/update/${user._id}`, fd, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
+      const res = await API.put(`/user/update/${user._id}`, payload, {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const updatedUser = res.data?.user || res.data;
@@ -222,19 +227,28 @@ const ProfilePage = () => {
   const handleAddContent = async (e) => {
     e.preventDefault();
     try {
-      const formData = new FormData();
-      formData.append("title", newSection.title);
-      formData.append("description", newSection.description);
+      const uploadFile = async (file) => {
+        const { url, publicUrl } = await API.get(`/user/upload-url`, {
+          params: { filename: file.name, contentType: file.type },
+          headers: { Authorization: `Bearer ${token}` },
+        }).then((r) => r.data);
+        await fetch(url, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
+        return publicUrl;
+      };
 
-      newSection.images.forEach((file) => formData.append("files", file));
-      newSection.videos.forEach((file) => formData.append("files", file));
+      const imageUrls = await Promise.all((newSection.images || []).map(uploadFile));
+      const videoUrls = await Promise.all((newSection.videos || []).map(uploadFile));
 
-      const res = await API.post(`/user/upload/${user._id}`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
+      const res = await API.post(
+        `/user/upload/${user._id}`,
+        {
+          title: newSection.title,
+          description: newSection.description,
+          images: imageUrls,
+          videos: videoUrls,
         },
-      });
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
       setUser(res.data.user);
       setContentMode(false);

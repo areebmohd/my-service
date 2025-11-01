@@ -1,11 +1,10 @@
 import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import path from "path";
-import fs from "fs";
 import crypto from "crypto";
 import sendEmail from "../utils/sendEmail.js";
 import professions from "../data/professions.js";
+import { createPresignedUpload, buildPublicUrl } from "../utils/awsS3.js";
 
 export const registerUser = async (req, res) => {
   try {
@@ -171,9 +170,9 @@ export const updateUser = async (req, res) => {
       updateData.profilePic = "";
     }
 
-    if (req.file) {
-      console.log("Cloudinary uploaded file:", req.file);
-      updateData.profilePic = req.file.path; 
+    const profilePicUrl = req.body.profilePicUrl;
+    if (typeof profilePicUrl === "string" && profilePicUrl.trim().length > 0) {
+      updateData.profilePic = profilePicUrl.trim();
     }
 
     if (name) {
@@ -207,16 +206,20 @@ export const uploadContent = async (req, res) => {
     const { id } = req.params;
 
     const { title, description } = req.body;
-
-    const files = req.files || [];
-
-    const images = files
-      .filter((f) => f.mimetype.startsWith("image"))
-      .map((f) => f.path);
-
-    const videos = files
-      .filter((f) => f.mimetype.startsWith("video"))
-      .map((f) => f.path);
+    let images = [];
+    let videos = [];
+    try {
+      const bodyImages = req.body.images;
+      const bodyVideos = req.body.videos;
+      if (Array.isArray(bodyImages)) images = bodyImages.filter(Boolean);
+      else if (typeof bodyImages === "string" && bodyImages) images = JSON.parse(bodyImages);
+      if (Array.isArray(bodyVideos)) videos = bodyVideos.filter(Boolean);
+      else if (typeof bodyVideos === "string" && bodyVideos) videos = JSON.parse(bodyVideos);
+    } catch (e) {
+      // Fallback to empty on bad payload
+      images = images || [];
+      videos = videos || [];
+    }
 
     const user = await User.findById(id);
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -231,6 +234,27 @@ export const uploadContent = async (req, res) => {
   } catch (err) {
     console.error("Upload error:", err);
     res.status(500).json({ message: err.message });
+  }
+};
+
+export const getUploadUrl = async (req, res) => {
+  try {
+    const { filename, contentType } = req.query;
+    if (!filename || !contentType) {
+      return res.status(400).json({ message: "filename and contentType are required" });
+    }
+    const safeName = String(filename).replace(/[^a-zA-Z0-9._-]/g, "_");
+    const key = `uploads/${Date.now()}-${Math.random().toString(36).slice(2)}-${safeName}`;
+    const url = await createPresignedUpload({
+      bucket: process.env.AWS_S3_BUCKET,
+      key,
+      contentType,
+    });
+    const publicUrl = buildPublicUrl({ bucket: process.env.AWS_S3_BUCKET, key });
+    res.json({ url, key, publicUrl });
+  } catch (err) {
+    console.error("Presign error:", err);
+    res.status(500).json({ message: "Failed to create upload URL" });
   }
 };
 
@@ -292,19 +316,6 @@ export const deleteSection = async (req, res) => {
     const section = user.sections.find((s) => s._id.toString() === sectionId);
 
     if (!section) return res.status(404).json({ message: "Section not found" });
-
-    const allFiles = [...(section.images || []), ...(section.videos || [])];
-    allFiles.forEach((fileUrl) => {
-      if (fileUrl.includes("uploads")) {
-        const filePath = path.join(
-          path.resolve(),
-          fileUrl.replace(/^.*\/uploads/, "uploads")
-        );
-        fs.unlink(filePath, (err) => {
-          if (err) console.log("Failed to delete:", filePath, err.message);
-        });
-      }
-    });
     user.sections = user.sections.filter((s) => s._id.toString() !== sectionId);
     await user.save();
 
