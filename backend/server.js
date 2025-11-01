@@ -9,8 +9,11 @@ connectDB();
 
 const app = express();
 
-app.use(express.json());
 app.use(cors());
+// Parse JSON bodies - with increased limits for file uploads
+app.use(express.json({ limit: '50mb' }));
+// Parse URL-encoded bodies
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 app.use("/api/user", userRoutes);
 

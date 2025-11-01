@@ -149,6 +149,11 @@ export const updateUser = async (req, res) => {
       return res.status(403).json({ message: "Not authorized to edit this profile" });
     }
 
+    // Ensure req.body exists before destructuring
+    if (!req.body) {
+      return res.status(400).json({ message: "Request body is required" });
+    }
+
     const {
       name,
       profession,
@@ -160,7 +165,7 @@ export const updateUser = async (req, res) => {
       fee,
       contact,
       removeProfilePic,
-    } = req.body;
+    } = req.body || {};
 
     const updateData = {
       ...(name && { name }),
@@ -214,12 +219,17 @@ export const uploadContent = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const { title, description } = req.body;
+    // Ensure req.body exists before destructuring
+    if (!req.body) {
+      return res.status(400).json({ message: "Request body is required" });
+    }
+
+    const { title, description } = req.body || {};
     let images = [];
     let videos = [];
     try {
-      const bodyImages = req.body.images;
-      const bodyVideos = req.body.videos;
+      const bodyImages = req.body?.images;
+      const bodyVideos = req.body?.videos;
       if (Array.isArray(bodyImages)) images = bodyImages.filter(Boolean);
       else if (typeof bodyImages === "string" && bodyImages) images = JSON.parse(bodyImages);
       if (Array.isArray(bodyVideos)) videos = bodyVideos.filter(Boolean);

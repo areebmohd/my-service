@@ -189,9 +189,10 @@ const ProfilePage = () => {
         return;
       }
 
-      const res = await API.put(`/user/update/${user._id}`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // Ensure payload is at least an empty object, never undefined
+      const safePayload = payload || {};
+      
+      const res = await API.put(`/user/update/${user._id}`, safePayload);
 
       const updatedUser = res.data?.user || res.data;
       setUser(updatedUser);
@@ -239,16 +240,15 @@ const ProfilePage = () => {
       const imageUrls = await Promise.all((newSection.images || []).map(uploadFile));
       const videoUrls = await Promise.all((newSection.videos || []).map(uploadFile));
 
-      const res = await API.post(
-        `/user/upload/${user._id}`,
-        {
-          title: newSection.title,
-          description: newSection.description,
-          images: imageUrls,
-          videos: videoUrls,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      // Ensure all required fields are present
+      const contentPayload = {
+        title: newSection.title || "",
+        description: newSection.description || "",
+        images: imageUrls || [],
+        videos: videoUrls || [],
+      };
+      
+      const res = await API.post(`/user/upload/${user._id}`, contentPayload);
 
       setUser(res.data.user);
       setContentMode(false);
@@ -311,11 +311,8 @@ const ProfilePage = () => {
     }
 
     try {
-      const res = await API.put(
-        `/user/like/${user._id}`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      // Like endpoint doesn't need a body, but send empty object to ensure req.body exists
+      const res = await API.put(`/user/like/${user._id}`, {});
 
       if (res.data && (res.data._id || res.data.likes !== undefined)) {
         if (res.data._id) setUser(res.data);
@@ -424,7 +421,6 @@ const ProfilePage = () => {
         <form
           className="edit-form"
           onSubmit={handleUpdateProfile}
-          encType="multipart/form-data"
         >
           <p className="heading">Edit Profile Info</p>
           <div className="pair">
