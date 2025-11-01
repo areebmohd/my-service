@@ -88,7 +88,7 @@ const HomePage = ({ activeSection, setActiveSection }) => {
         <h1 className="main-heading">Find the Right Service, Instantly ⚡</h1>
         <p className="description">
           Welcome to MyService.com — a platform where you can find trusted
-          professionals for anything you need, from home repairs to tech help.
+          professionals for any need, from home repairs to tech help.
         </p>
 
         <div className="search-section">
